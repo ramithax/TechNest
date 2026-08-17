@@ -1,0 +1,64 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="obj\Debug\net10.0\.NETCoreApp,Version=v10.0.AssemblyAttributes.cs" />
+    <Compile Include="obj\Debug\net10.0\TechNest.Api.AssemblyInfo.cs" />
+    <Compile Include="obj\Debug\net10.0\TechNest.Api.GlobalUsings.g.cs" />
+    <Compile Include="obj\Debug\net10.0\TechNest.Api.MvcApplicationPartsAssemblyInfo.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="obj\Debug\net10.0\ApiEndpoints.json" />
+    <Content Include="obj\Debug\net10.0\EndpointInfo\TechNest.Api.json" />
+    <Content Include="obj\Debug\net10.0\rjsmcshtml.dswa.cache.json" />
+    <Content Include="obj\Debug\net10.0\rjsmrazor.dswa.cache.json" />
+    <Content Include="obj\Debug\net10.0\rpswa.dswa.cache.json" />
+    <Content Include="obj\Debug\net10.0\staticwebassets.build.endpoints.json" />
+    <Content Include="obj\Debug\net10.0\staticwebassets.build.json" />
+    <Content Include="obj\Debug\net10.0\staticwebassets.references.upToDateCheck.txt" />
+    <Content Include="obj\Debug\net10.0\staticwebassets.removed.txt" />
+    <Content Include="obj\Debug\net10.0\TechNest.Api.csproj.FileListAbsolute.txt" />
+    <Content Include="obj\project.assets.json" />
+    <Content Include="obj\TechNest.Api.csproj.nuget.dgspec.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="obj\Debug\net10.0\apphost.exe" />
+    <None Include="obj\Debug\net10.0\EndpointInfo\TechNest.Api.OpenApiFiles.cache" />
+    <None Include="obj\Debug\net10.0\refint\TechNest.Api.dll" />
+    <None Include="obj\Debug\net10.0\ref\TechNest.Api.dll" />
+    <None Include="obj\Debug\net10.0\staticwebassets.build.json.cache" />
+    <None Include="obj\Debug\net10.0\swae.build.ex.cache" />
+    <None Include="obj\Debug\net10.0\TechNest.85171BDE.Up2Date" />
+    <None Include="obj\Debug\net10.0\TechNest.Api.AssemblyInfoInputs.cache" />
+    <None Include="obj\Debug\net10.0\TechNest.Api.assets.cache" />
+    <None Include="obj\Debug\net10.0\TechNest.Api.csproj.AssemblyReference.cache" />
+    <None Include="obj\Debug\net10.0\TechNest.Api.csproj.BuildWithSkipAnalyzers" />
+    <None Include="obj\Debug\net10.0\TechNest.Api.csproj.CoreCompileInputs.cache" />
+    <None Include="obj\Debug\net10.0\TechNest.Api.dll" />
+    <None Include="obj\Debug\net10.0\TechNest.Api.GeneratedMSBuildEditorConfig.editorconfig" />
+    <None Include="obj\Debug\net10.0\TechNest.Api.genruntimeconfig.cache" />
+    <None Include="obj\Debug\net10.0\TechNest.Api.MvcApplicationPartsAssemblyInfo.cache" />
+    <None Include="obj\Debug\net10.0\TechNest.Api.pdb" />
+    <None Include="obj\project.nuget.cache" />
+    <None Include="obj\TechNest.Api.csproj.nuget.g.props" />
+    <None Include="obj\TechNest.Api.csproj.nuget.g.targets" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.10" />
+    <PackageReference Include="Scalar.AspNetCore" Version="2.16.20" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="10.2.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="obj\Debug\net10.0\staticwebassets\" />
+  </ItemGroup>
+
+</Project>
