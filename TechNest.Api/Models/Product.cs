@@ -1,4 +1,6 @@
-﻿namespace TechNest.Api.Models
+﻿using static System.Net.Mime.MediaTypeNames;
+
+namespace TechNest.Api.Models
 {
     public class Product
 {
@@ -18,7 +20,7 @@
 
     public string Brand { get; set; } = string.Empty;
 
-    public List<string> Images { get; set; } = new();
+    public List<string> Images { get; set; } = new ();
 
     public bool IsActive { get; set; } = true;
 
