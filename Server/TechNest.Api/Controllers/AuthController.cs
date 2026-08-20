@@ -1,37 +1,57 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TechNest.Api.Dtos.UserDto;
-using TechNest.Api.Models;
+using TechNest.Api.Services.Interfaces;
 
 namespace TechNest.Api.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class AuthController : ControllerBase
+    public class AuthController(IAuthService service) : ControllerBase
     {
-        static User user = new();
-
         [HttpPost("register")]
-        public IActionResult SignUp(RegisterDto register)
+        public async Task<IActionResult> SignUp(RegisterDto register)
         {
-            var hashedPassword = new PasswordHasher<User>()
-                .HashPassword(user, register.Password);
+            var user = await service.Register(register);
 
-            user.Name = register.Name;
-            user.PasswordHash = hashedPassword;
-
+            if(user == null)
+            {
+                return BadRequest("Email already taken");
+            }
             return Ok(user);
         }
 
         [HttpPost("login")]
-        public ActionResult<string> Login(LoginDto login)
+        public async Task<ActionResult<TokenResponseDto>> Login(LoginDto login)
         {
-            if(user.Name != login.Name)
+            var results = await service.Login(login);
+
+            if (results == null)
             {
-                return BadRequest("User not found.");
+                return Unauthorized("Invalid credentials");
             }
 
-            if()
+            return Ok(results);
+        }
+
+        [HttpPost("refresh-token")]
+        public async Task<ActionResult<TokenResponseDto>> RefreshToken(RefreshTokenRequestDto request)
+        {
+            var results = await service.RefreshToken(request);
+
+            if (results == null)
+            {
+                return BadRequest("Invalid refresh token");
+            }
+
+            return Ok(results);
+        }
+
+        [Authorize(Roles = "Admin")]
+        [HttpGet("admin-only")]
+        public IActionResult AdminOnly()
+        {
+            return Ok("You are an admin");
         }
     }
 }

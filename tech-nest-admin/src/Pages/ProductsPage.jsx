@@ -19,7 +19,8 @@ function ProductPage() {
 
     return (
         <div>
-            <h1>Products</h1>
+
+            <p className="text-white text-2xl font-semibold text-center m-10">Products Page</p>
 
             {products.map((product) => (
                 <div key={product.id}>
