@@ -7,6 +7,9 @@ namespace TechNest.Api.Data
     {
         public DbSet<Product> Products => Set<Product>();
         public DbSet<User> Users => Set<User>();
+        public DbSet<Technician> Technicians => Set<Technician>();
+        public DbSet<RepairService> RepairServices => Set<RepairService>();
+        public DbSet<Repair> Repairs => Set<Repair>();
     }
 }
     
