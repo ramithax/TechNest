@@ -14,7 +14,7 @@ namespace TechNest.Api.Controllers
         {
             var user = await service.Register(register);
 
-            if(user == null)
+            if (user == null)
             {
                 return BadRequest("Email already taken");
             }

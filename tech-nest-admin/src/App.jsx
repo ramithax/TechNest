@@ -7,10 +7,12 @@ import { OrderPage } from "./Pages/OrdersPage";
 import { CustomerPage } from "./Pages/CustomersPage";
 import { RepairPage } from "./Pages/RepairsPage";
 import { AddProductPage } from "./Pages/AddProductPage";
+import { Toaster } from "@/components/ui/sonner";
 
 function App() {
   return (
     <BrowserRouter>
+      <Toaster />
       <Routes>
 
         {/* Login */}

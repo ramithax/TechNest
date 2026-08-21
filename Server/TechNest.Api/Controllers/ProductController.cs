@@ -1,10 +1,12 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using TechNest.Api.DTOs;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using TechNest.Api.Dtos.ProductDto;
+using TechNest.Api.DTOs;
 using TechNest.Api.Services.Interfaces;
 
-namespace TechNest.Api.Controllers
-{
+namespace TechNest.Api.Controllers;
+
+    [Authorize(Roles = "Admin")]
     [Route("api/[controller]")]
     [ApiController]
     public class ProductController(IProductService service) : ControllerBase
@@ -26,6 +28,7 @@ namespace TechNest.Api.Controllers
             return Ok(product);
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         public async Task<IActionResult> CreateProduct(CreateProductDto product)
         {
@@ -38,6 +41,7 @@ namespace TechNest.Api.Controllers
             );
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpPut("{id}")]
         public async Task<ActionResult> UpdateProduct(int id, UpdateProductDto product)
         {
@@ -45,6 +49,7 @@ namespace TechNest.Api.Controllers
             return updated ? NoContent() : NotFound("Product not found");
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpDelete("{id}")]
         public async Task<ActionResult> DeeleteProduct(int id)
         {

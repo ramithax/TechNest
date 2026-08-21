@@ -13,7 +13,11 @@ export function ProductPage() {
             setLoading(true);
             setError("");
 
-            const response = await api.get("/Product");
+            const response = await api.get("/Product", {
+                params: {
+                    includeInactive: true
+                }
+            });
 
             setProducts(response.data);
         } catch (error) {

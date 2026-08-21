@@ -3,6 +3,7 @@ import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "@/lib/axios";
+import { toast } from "sonner";
 
 export function LoginPage() {
     const [email, setEmail] = useState("");
@@ -57,6 +58,8 @@ export function LoginPage() {
                 res.data.refreshToken
             );
 
+            toast.success("Login successful");
+
             // Redirect after successful login
             navigate("/admin");
 
@@ -65,11 +68,11 @@ export function LoginPage() {
             console.log("Server response:", error.response?.data);
 
             if (error.response?.status === 401) {
-                alert("Invalid email or password");
+                toast.error("Invalid email or password");
             } else if (error.response?.status === 400) {
-                alert("Please check your email and password");
+                toast.error("Please check your email and password");
             } else {
-                alert("Something went wrong. Please try again.");
+                toast.error("Something went wrong. Please try again.");
             }
 
         } finally {

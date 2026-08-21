@@ -6,7 +6,7 @@ namespace TechNest.Api.Services.Interfaces
 {
     public interface IProductService
     {
-        Task<List<ProductResponseDto>> GetAllProducts();
+        Task<List<ProductResponseDto>> GetAllProducts(bool includeInactive = false);
 
         Task<ProductResponseDto?> GetProductById(int id);
 
