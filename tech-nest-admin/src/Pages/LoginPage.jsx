@@ -1,8 +1,82 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Link } from "react-router-dom";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import api from "@/lib/axios";
 
 export function LoginPage() {
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+    const [errors, setErrors] = useState({});
+    const [loading, setLoading] = useState(false);
+
+    const navigate = useNavigate();
+
+    const handleLogin = async (e) => {
+        e.preventDefault();
+
+        // Client-side validation
+        const newErrors = {};
+
+        if (!email.trim()) {
+            newErrors.email = "Email is required";
+        } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+            newErrors.email = "Please enter a valid email";
+        }
+
+        if (!password) {
+            newErrors.password = "Password is required";
+        } else if (password.length < 6) {
+            newErrors.password =
+                "Password must be at least 6 characters";
+        }
+
+        if (Object.keys(newErrors).length > 0) {
+            setErrors(newErrors);
+            return;
+        }
+
+        setErrors({});
+
+        try {
+            setLoading(true);
+
+            const res = await api.post("/Auth/login", {
+                email,
+                password,
+            });
+
+            // Save JWT tokens
+            localStorage.setItem(
+                "accessToken",
+                res.data.accessToken
+            );
+
+            localStorage.setItem(
+                "refreshToken",
+                res.data.refreshToken
+            );
+
+            // Redirect after successful login
+            navigate("/admin");
+
+        } catch (error) {
+            console.error("Login failed:", error);
+            console.log("Server response:", error.response?.data);
+
+            if (error.response?.status === 401) {
+                alert("Invalid email or password");
+            } else if (error.response?.status === 400) {
+                alert("Please check your email and password");
+            } else {
+                alert("Something went wrong. Please try again.");
+            }
+
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
         <div className="relative min-h-screen w-full overflow-hidden bg-black">
 
@@ -14,7 +88,10 @@ export function LoginPage() {
                 playsInline
                 className="absolute inset-0 h-full w-full object-cover"
             >
-                <source src="/Login_video.mp4" type="video/mp4" />
+                <source
+                    src="/Login_video.mp4"
+                    type="video/mp4"
+                />
             </video>
 
             {/* Left Gradient */}
@@ -46,27 +123,49 @@ export function LoginPage() {
                         </div>
 
                         {/* Form */}
-                        <form className="space-y-6">
+                        <form
+                            onSubmit={handleLogin}
+                            className="space-y-6"
+                        >
 
-                            {/* Username */}
+                            {/* Email */}
                             <div className="space-y-2">
+
                                 <label
-                                    htmlFor="username"
+                                    htmlFor="email"
                                     className="text-sm font-medium text-white/80"
                                 >
-                                    Username
+                                    Email
                                 </label>
 
                                 <Input
-                                    id="username"
-                                    type="text"
-                                    placeholder="Enter your username"
-                                    className="h-12 rounded-lg border-white/15 bg-white/5 px-4 text-white placeholder:text-white backdrop-blur-sm transition focus:border-white/40 focus:bg-white/10 focus-visible:ring-0"
+                                    id="email"
+                                    type="email"
+                                    placeholder="Enter your email"
+                                    value={email}
+                                    onChange={(e) => {
+                                        setEmail(e.target.value);
+
+                                        setErrors((prev) => ({
+                                            ...prev,
+                                            email: "",
+                                        }));
+                                    }}
+                                    disabled={loading}
+                                    className="h-12 rounded-lg border-white/15 bg-white/5 px-4 text-white placeholder:text-white/40 backdrop-blur-sm transition focus:border-white/40 focus:bg-white/10 focus-visible:ring-0"
                                 />
+
+                                {errors.email && (
+                                    <p className="text-sm text-red-400">
+                                        {errors.email}
+                                    </p>
+                                )}
+
                             </div>
 
                             {/* Password */}
                             <div className="space-y-2">
+
                                 <label
                                     htmlFor="password"
                                     className="text-sm font-medium text-white/80"
@@ -78,41 +177,63 @@ export function LoginPage() {
                                     id="password"
                                     type="password"
                                     placeholder="Enter your password"
-                                    className="h-12 rounded-lg border-white/15 bg-white/5 px-4 text-white placeholder:text-white backdrop-blur-sm transition focus:border-white/40 focus:bg-white/10 focus-visible:ring-0"
+                                    value={password}
+                                    onChange={(e) => {
+                                        setPassword(e.target.value);
+
+                                        setErrors((prev) => ({
+                                            ...prev,
+                                            password: "",
+                                        }));
+                                    }}
+                                    disabled={loading}
+                                    className="h-12 rounded-lg border-white/15 bg-white/5 px-4 text-white placeholder:text-white/40 backdrop-blur-sm transition focus:border-white/40 focus:bg-white/10 focus-visible:ring-0"
                                 />
+
+                                {errors.password && (
+                                    <p className="text-sm text-red-400">
+                                        {errors.password}
+                                    </p>
+                                )}
+
                             </div>
 
                             {/* Forgot Password */}
                             <div className="-mt-2 flex">
+
                                 <button
                                     type="button"
-                                    className="text-sm text-white/80 transition hover:text-white"
+                                    className="text-sm text-white/60 transition hover:text-white"
                                 >
                                     Forgot password?
                                 </button>
+
                             </div>
 
                             {/* Sign In */}
-                            <Link to="/admin" className="block">
-                                <Button
-                                    type="button"
-                                    className="h-12 w-full rounded-lg border border-white/15 bg-white/10 text-base font-semibold text-white shadow-lg backdrop-blur-sm transition hover:border-white/25 hover:bg-white/15"
-                                >
-                                    Sign In
-                                </Button>
-                            </Link>
+                            <Button
+                                type="submit"
+                                disabled={loading}
+                                className="h-12 w-full rounded-lg border border-white/15 bg-white/10 text-base font-semibold text-white shadow-lg backdrop-blur-sm transition hover:border-white/25 hover:bg-white/15"
+                            >
+                                {loading
+                                    ? "Signing In..."
+                                    : "Sign In"}
+                            </Button>
 
                         </form>
 
-                        {/* Small Footer */}
-                        <p className="mt-6 text-center text-xs text-white/80">
+                        {/* Footer */}
+                        <p className="mt-6 text-center text-xs text-white/50">
                             © 2026 TechNest. All rights reserved.
                         </p>
 
                     </div>
 
                 </div>
+
             </div>
+
         </div>
     );
 }
