@@ -45,7 +45,7 @@ namespace TechNest.Api.Controllers
         }
 
         [HttpDelete("{id}")]
-        public async Task<ActionResult> DeeleteProduct(int id)
+        public async Task<ActionResult> DeleteProduct(int id)
         {
             var deleted = await service.DeleteProduct(id);
             return deleted ? NoContent() : NotFound("Product not found");
