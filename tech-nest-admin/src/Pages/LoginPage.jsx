@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "@/lib/axios";
 import { toast } from "sonner";
+import { jwtDecode } from "jwt-decode";
 
 export function LoginPage() {
     const [email, setEmail] = useState("");
@@ -40,19 +41,27 @@ export function LoginPage() {
         setErrors({});
 
         try {
-            setLoading(true);
-
             const res = await api.post("/Auth/login", {
                 email,
                 password,
             });
 
-            // Save JWT tokens
-            localStorage.setItem(
-                "accessToken",
-                res.data.accessToken
-            );
+            const accessToken = res.data.accessToken;
 
+            // Decode JWT
+            const decoded = jwtDecode(accessToken);
+
+            const role =
+                decoded.role ||
+                decoded["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"];
+
+            if (role?.toLowerCase() !== "admin") {
+                toast.error("You are not authorized to access the admin panel.");
+                return;
+            }
+
+            // Save JWT tokens
+            localStorage.setItem("accessToken", accessToken);
             localStorage.setItem(
                 "refreshToken",
                 res.data.refreshToken
@@ -60,7 +69,6 @@ export function LoginPage() {
 
             toast.success("Login successful");
 
-            // Redirect after successful login
             navigate("/admin");
 
         } catch (error) {

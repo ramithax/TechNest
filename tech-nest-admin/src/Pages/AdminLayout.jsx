@@ -2,11 +2,13 @@ import { Outlet, Navigate } from "react-router-dom";
 import AdminNavbar from "../components/AdminNavbar";
 import AdminSidebar from "../components/AdminSidebar";
 import { jwtDecode } from "jwt-decode";
+import { toast } from "sonner";
 
 function AdminLayout() {
     const token = localStorage.getItem("accessToken");
 
     if (!token) {
+        toast.error("Please login to continue");
         return <Navigate to="/" replace />;
     }
 

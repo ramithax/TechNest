@@ -13,16 +13,26 @@ function AdminNavbar() {
     const token = localStorage.getItem("accessToken");
 
     let userName = "Admin";
+    let userRole = "Administrator";
 
     if (token) {
         try {
             const decoded = jwtDecode(token);
 
+            console.log("Decoded token:", decoded);
+
+            // ASP.NET Core ClaimTypes.Name
             userName =
-                decoded.name ||
-                decoded.unique_name ||
-                decoded.email ||
-                "Admin";
+                decoded[
+                "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"
+                ] || "Admin";
+
+            // ASP.NET Core ClaimTypes.Role
+            userRole =
+                decoded[
+                "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"
+                ] || "Administrator";
+
         } catch (error) {
             console.error("Failed to decode token:", error);
         }
@@ -46,6 +56,7 @@ function AdminNavbar() {
                 {/* Logo Section */}
                 <div className="flex h-full w-[300px] shrink-0 items-center border-r border-zinc-800/80 px-5">
                     <div className="flex items-center gap-3">
+
                         <div className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-lg">
                             <img
                                 src="/logo.jpg"
@@ -63,6 +74,7 @@ function AdminNavbar() {
                                 Admin
                             </span>
                         </div>
+
                     </div>
                 </div>
 
@@ -103,13 +115,14 @@ function AdminNavbar() {
                             {firstLetter}
                         </div>
 
+                        {/* User Information */}
                         <div className="hidden text-left sm:block">
                             <p className="text-xs font-medium text-zinc-200">
                                 {userName}
                             </p>
 
                             <p className="text-[10px] text-zinc-500">
-                                Administrator
+                                {userRole}
                             </p>
                         </div>
 

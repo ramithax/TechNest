@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TechNest.Api.Dtos.ProductDto;
 using TechNest.Api.DTOs;
@@ -6,7 +6,6 @@ using TechNest.Api.Services.Interfaces;
 
 namespace TechNest.Api.Controllers;
 
-    [Authorize(Roles = "Admin")]
     [Route("api/[controller]")]
     [ApiController]
     public class ProductController(IProductService service) : ControllerBase
@@ -57,4 +56,3 @@ namespace TechNest.Api.Controllers;
             return deleted ? NoContent() : NotFound("Product not found");
         }
     }
-}
