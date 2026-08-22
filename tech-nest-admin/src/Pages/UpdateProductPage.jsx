@@ -1,24 +1,57 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import api from "@/lib/axios";
 import { uploadImage } from "@/lib/image-upload";
 import { toast } from "sonner";
 
-export function UpdateProductPage({ product }) {
+export function UpdateProductPage() {
+    const { productId } = useParams();
     const navigate = useNavigate();
 
-    const [name, setName] = useState(product?.name || "");
-    const [description, setDescription] = useState(product?.description || "");
-    const [actualPrice, setActualPrice] = useState(product?.actualPrice || "");
-    const [labelPrice, setLabelPrice] = useState(product?.labelPrice || "");
+    const [name, setName] = useState("");
+    const [description, setDescription] = useState("");
+    const [actualPrice, setActualPrice] = useState("");
+    const [labelPrice, setLabelPrice] = useState("");
+
     const [images, setImages] = useState([]);
-    const [category, setCategory] = useState(product?.category || "");
-    const [stockQuantity, setStockQuantity] = useState(product?.stockQuantity || "");
-    const [brand, setBrand] = useState(product?.brand || "");
+    const [existingImages, setExistingImages] = useState([]);
+
+    const [category, setCategory] = useState("");
+
+    const [stockQuantity, setStockQuantity] = useState("");
+
+    const [brand, setBrand] = useState("");
 
     const [loading, setLoading] = useState(false);
+    const [fetching, setFetching] = useState(true);
     const [fileKey, setFileKey] = useState(0);
 
+    useEffect(() => {
+        const fetchProduct = async () => {
+            try {
+                const response = await api.get(`/Product/${productId}`);
+                const product = response.data;
+                setName(product.name || "");
+                setDescription(product.description || "");
+                setActualPrice(product.actualPrice ?? "");
+                setLabelPrice(product.labelPrice ?? "");
+                setExistingImages(product.images || []);
+                setCategory(product.category || "");
+                setStockQuantity(product.stockQuantity ?? "");
+                setBrand(product.brand || "");
+            } catch (error) {
+                console.error("Failed to fetch product:", error);
+                toast.error("Failed to load product details.");
+                navigate("/admin/products");
+            } finally {
+                setFetching(false);
+            }
+        };
+
+        if (productId) {
+            fetchProduct();
+        }
+    }, [productId, navigate]);
 
     const handleImageChange = (e) => {
         if (!e.target.files) {
@@ -36,9 +69,9 @@ export function UpdateProductPage({ product }) {
                 continue;
             }
 
-            // Check file size - 2MB
+            // Check file size - 4MB
             if (file.size > 4 * 1024 * 1024) {
-                toast.error(`${file.name} is larger than 2MB`);
+                toast.error(`${file.name} is larger than 4MB`);
                 continue;
             }
 
@@ -48,9 +81,13 @@ export function UpdateProductPage({ product }) {
         setImages(validFiles);
     };
 
-
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+        if (!productId) {
+            toast.error("Product ID is missing");
+            return;
+        }
 
         if (!name.trim()) {
             toast.error("Product name is required");
@@ -67,11 +104,6 @@ export function UpdateProductPage({ product }) {
             return;
         }
 
-        if (images.length === 0) {
-            toast.error("At least one image is required");
-            return;
-        }
-
         if (!category.trim()) {
             toast.error("Category is required");
             return;
@@ -82,7 +114,10 @@ export function UpdateProductPage({ product }) {
             return;
         }
 
-        if (!stockQuantity || Number(stockQuantity) < 0) {
+        if (
+            stockQuantity === "" ||
+            Number(stockQuantity) < 0
+        ) {
             toast.error("Stock quantity cannot be negative");
             return;
         }
@@ -90,12 +125,19 @@ export function UpdateProductPage({ product }) {
         try {
             setLoading(true);
 
+            let imageUrls = existingImages;
 
-            const imageUrls = await Promise.all(
-                images.map((file) => uploadImage(file))
-            );
+            // Upload new images only if user selected them
+            if (images.length > 0) {
+                imageUrls = await Promise.all(
+                    images.map((file) => uploadImage(file))
+                );
 
-            console.log("Uploaded image URLs:", imageUrls);
+                console.log(
+                    "Uploaded new image URLs:",
+                    imageUrls
+                );
+            }
 
             const productData = {
                 name: name.trim(),
@@ -108,29 +150,28 @@ export function UpdateProductPage({ product }) {
                 images: imageUrls,
             };
 
-            console.log("Product data:", productData);
+            console.log(
+                "Updated product data:",
+                productData
+            );
 
-            await api.post("/Product", productData);
+            // IMPORTANT: PUT, not POST
+            await api.put(
+                `/Product/${productId}`,
+                productData
+            );
 
-            toast.success("Product added successfully");
-
-
-            setName("");
-            setDescription("");
-            setActualPrice("");
-            setLabelPrice("");
-            setImages([]);
-            setCategory("");
-            setStockQuantity("");
-            setBrand("");
-
-            setFileKey((prev) => prev + 1);
-
+            toast.success(
+                "Product updated successfully"
+            );
 
             navigate("/admin/products");
 
         } catch (error) {
-            console.error("Failed to create product:", error);
+            console.error(
+                "Failed to update product:",
+                error
+            );
 
             if (error.response?.data) {
                 console.error(
@@ -139,16 +180,37 @@ export function UpdateProductPage({ product }) {
                 );
             }
 
+            if (error.response?.status === 401) {
+                toast.error(
+                    "You are not authorized. Please login again."
+                );
+                return;
+            }
+
+            if (error.response?.status === 403) {
+                toast.error(
+                    "You don't have permission to update this product."
+                );
+                return;
+            }
+
             toast.error(
+                error.response?.data ||
                 error.message ||
-                "Failed to add product. Please try again."
+                "Failed to update product. Please try again."
             );
 
         } finally {
             setLoading(false);
         }
     };
-
+    if (fetching) {
+        return (
+            <div className="min-h-screen bg-black text-white p-6 flex items-center justify-center">
+                <p className="text-zinc-500">Loading product details...</p>
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-black text-white p-6">
@@ -156,21 +218,19 @@ export function UpdateProductPage({ product }) {
             <div className="max-w-3xl mx-auto">
 
                 {/* Header */}
-
                 <div className="mb-6">
 
                     <h1 className="text-2xl font-semibold text-white">
-                        Add Product
+                        Edit Product
                     </h1>
 
                     <p className="text-sm text-zinc-500 mt-1">
-                        Add a new product to your store
+                        Update product information
                     </p>
 
                 </div>
 
                 {/* Form Container */}
-
                 <div className="bg-zinc-950 border border-zinc-800 rounded-xl shadow-2xl p-8">
 
                     <form
@@ -178,7 +238,7 @@ export function UpdateProductPage({ product }) {
                         className="space-y-6"
                     >
 
-
+                        {/* Product Name */}
                         <div>
 
                             <label className="block text-sm font-medium text-zinc-300 mb-2">
@@ -198,6 +258,7 @@ export function UpdateProductPage({ product }) {
 
                         </div>
 
+                        {/* Description */}
                         <div>
 
                             <label className="block text-sm font-medium text-zinc-300 mb-2">
@@ -217,10 +278,10 @@ export function UpdateProductPage({ product }) {
 
                         </div>
 
+                        {/* Prices */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
                             {/* Actual Price */}
-
                             <div>
 
                                 <label className="block text-sm font-medium text-zinc-300 mb-2">
@@ -243,7 +304,6 @@ export function UpdateProductPage({ product }) {
                             </div>
 
                             {/* Label Price */}
-
                             <div>
 
                                 <label className="block text-sm font-medium text-zinc-300 mb-2">
@@ -267,11 +327,42 @@ export function UpdateProductPage({ product }) {
 
                         </div>
 
+                        {/* Images */}
                         <div>
 
                             <label className="block text-sm font-medium text-zinc-300 mb-2">
                                 Product Images
                             </label>
+
+                            {/* Existing Images */}
+                            {existingImages.length > 0 && (
+                                <div className="mb-4">
+
+                                    <p className="text-xs text-zinc-500 mb-2">
+                                        Current Images
+                                    </p>
+
+                                    <div className="grid grid-cols-4 gap-3">
+
+                                        {existingImages.map(
+                                            (image, index) => (
+                                                <div
+                                                    key={index}
+                                                    className="relative"
+                                                >
+                                                    <img
+                                                        src={image}
+                                                        alt={`Product ${index + 1}`}
+                                                        className="w-full h-20 object-cover rounded-lg border border-zinc-800"
+                                                    />
+                                                </div>
+                                            )
+                                        )}
+
+                                    </div>
+
+                                </div>
+                            )}
 
                             <input
                                 key={fileKey}
@@ -284,31 +375,36 @@ export function UpdateProductPage({ product }) {
                             />
 
                             <p className="text-xs text-zinc-600 mt-2">
-                                Maximum 2MB per image
+                                Select new images only if you want to replace the current images. Maximum 4MB per image.
                             </p>
 
-                            {/* IMAGE PREVIEW */}
-
+                            {/* New Image Preview */}
                             {images.length > 0 && (
 
-                                <div className="grid grid-cols-4 gap-3 mt-4">
+                                <div className="mt-4">
 
-                                    {images.map((file, index) => (
+                                    <p className="text-xs text-zinc-500 mb-2">
+                                        New Images
+                                    </p>
 
-                                        <div
-                                            key={index}
-                                            className="relative"
-                                        >
+                                    <div className="grid grid-cols-4 gap-3">
 
-                                            <img
-                                                src={URL.createObjectURL(file)}
-                                                alt={file.name}
-                                                className="w-full h-20 object-cover rounded-lg border border-zinc-800"
-                                            />
+                                        {images.map(
+                                            (file, index) => (
+                                                <div
+                                                    key={index}
+                                                    className="relative"
+                                                >
+                                                    <img
+                                                        src={URL.createObjectURL(file)}
+                                                        alt={file.name}
+                                                        className="w-full h-20 object-cover rounded-lg border border-zinc-800"
+                                                    />
+                                                </div>
+                                            )
+                                        )}
 
-                                        </div>
-
-                                    ))}
+                                    </div>
 
                                 </div>
 
@@ -316,7 +412,7 @@ export function UpdateProductPage({ product }) {
 
                         </div>
 
-
+                        {/* Category */}
                         <div>
 
                             <label className="block text-sm font-medium text-zinc-300 mb-2">
@@ -336,7 +432,7 @@ export function UpdateProductPage({ product }) {
 
                         </div>
 
-
+                        {/* Stock */}
                         <div>
 
                             <label className="block text-sm font-medium text-zinc-300 mb-2">
@@ -357,6 +453,7 @@ export function UpdateProductPage({ product }) {
 
                         </div>
 
+                        {/* Brand */}
                         <div>
 
                             <label className="block text-sm font-medium text-zinc-300 mb-2">
@@ -376,16 +473,15 @@ export function UpdateProductPage({ product }) {
 
                         </div>
 
+                        {/* Submit */}
                         <button
                             type="submit"
                             disabled={loading}
                             className="w-full bg-white text-black py-3 rounded-lg font-semibold hover:bg-zinc-200 transition disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-
                             {loading
-                                ? "Uploading images & adding product..."
-                                : "Add Product"}
-
+                                ? "Updating product..."
+                                : "Update Product"}
                         </button>
 
                     </form>
