@@ -4,17 +4,17 @@ import api from "@/lib/axios";
 import { uploadImage } from "@/lib/image-upload";
 import { toast } from "sonner";
 
-export function AddProductPage() {
+export function UpdateProductPage({ product }) {
     const navigate = useNavigate();
 
-    const [name, setName] = useState("");
-    const [description, setDescription] = useState("");
-    const [actualPrice, setActualPrice] = useState("");
-    const [labelPrice, setLabelPrice] = useState("");
+    const [name, setName] = useState(product?.name || "");
+    const [description, setDescription] = useState(product?.description || "");
+    const [actualPrice, setActualPrice] = useState(product?.actualPrice || "");
+    const [labelPrice, setLabelPrice] = useState(product?.labelPrice || "");
     const [images, setImages] = useState([]);
-    const [category, setCategory] = useState("");
-    const [stockQuantity, setStockQuantity] = useState("");
-    const [brand, setBrand] = useState("");
+    const [category, setCategory] = useState(product?.category || "");
+    const [stockQuantity, setStockQuantity] = useState(product?.stockQuantity || "");
+    const [brand, setBrand] = useState(product?.brand || "");
 
     const [loading, setLoading] = useState(false);
     const [fileKey, setFileKey] = useState(0);

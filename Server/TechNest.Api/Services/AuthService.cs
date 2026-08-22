@@ -175,32 +175,31 @@ namespace TechNest.Api.Services
         private string CreateToken(User user)
         {
             var claims = new List<Claim>
-            {
-                new Claim(
-                    ClaimTypes.Name,
-                    user.Name
-                ),
+    {
+        new Claim(
+            ClaimTypes.Name,
+            user.Name
+        ),
 
-                new Claim(
-                    ClaimTypes.NameIdentifier,
-                    user.Id.ToString()
-                ),
+        new Claim(
+            ClaimTypes.NameIdentifier,
+            user.Id.ToString()
+        ),
 
-                new Claim(
-                    ClaimTypes.Role,
-                    user.Role
-                ),
+        new Claim(
+            ClaimTypes.Email,
+            user.Email
+        ),
 
-                new Claim(
-                    ClaimTypes.Email,
-                    user.Email
-                )
-            };
+        new Claim(
+            ClaimTypes.Role,
+            user.Role.Trim()
+        )
+    };
 
-            var tokenKey =
-                configuration.GetValue<string>(
-                    "AppSettings:Token"
-                );
+            var tokenKey = configuration.GetValue<string>(
+                "AppSettings:Token"
+            );
 
             if (string.IsNullOrEmpty(tokenKey))
             {
