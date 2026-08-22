@@ -8,6 +8,7 @@ import { CustomerPage } from "./Pages/CustomersPage";
 import { RepairPage } from "./Pages/RepairsPage";
 import { AddProductPage } from "./Pages/AddProductPage";
 import { Toaster } from "@/components/ui/sonner";
+import { UpdateProductPage } from "./Pages/UpdateProductPage";
 
 function App() {
   return (
@@ -30,6 +31,7 @@ function App() {
           <Route path="customers" element={<CustomerPage />} />
           <Route path="repairs" element={<RepairPage />} />
           <Route path="add-product" element={<AddProductPage />} />
+          <Route path="edit-product/:productId" element={<UpdateProductPage />} />
 
         </Route>
 
