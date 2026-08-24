@@ -34,5 +34,21 @@ namespace TechNest.Api.Controllers
             var updated = await service.UpdateRepairStatus(id, updateDto);
             return updated ? NoContent() : NotFound("Repair ticket not found");
         }
+
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateRepair(int id, [FromBody] CreateRepairDto repairDto)
+        {
+            var result = await service.UpdateRepair(id, repairDto);
+            if (result is null) return NotFound("Repair ticket not found.");
+            return Ok(result);
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteRepair(int id)
+        {
+            var success = await service.DeleteRepair(id);
+            if (!success) return NotFound("Repair ticket not found.");
+            return NoContent();
+        }
     }
 }

@@ -6,6 +6,7 @@ namespace TechNest.Api.DTOs
         public string CustomerId { get; set; } = string.Empty;
         public string DeviceModel { get; set; } = string.Empty;
         public string IssueDescription { get; set; } = string.Empty;
+        public string? ImageUrl { get; set; }
         public string Status { get; set; } = string.Empty;
         public string? AiDiagnosticReport { get; set; }
         public decimal EstimatedCost { get; set; }

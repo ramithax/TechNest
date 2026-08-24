@@ -5,5 +5,6 @@ namespace TechNest.Api.DTOs
 		public required string CustomerId { get; set; }
 		public required string DeviceModel { get; set; }
 		public required string IssueDescription { get; set; }
-	}
+        public string? ImageUrl { get; set; }
+    }
 }

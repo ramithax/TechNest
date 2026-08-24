@@ -18,6 +18,9 @@ namespace TechNest.Api.Models
         public required string DeviceModel { get; set; }
         public required string IssueDescription { get; set; }
 
+        // Added ImageUrl property
+        public string? ImageUrl { get; set; }
+
         public RepairStatus Status { get; set; } = RepairStatus.Pending;
         public string? AiDiagnosticReport { get; set; }
         public decimal EstimatedCost { get; set; }
