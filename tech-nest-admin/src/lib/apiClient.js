@@ -1,9 +1,9 @@
-const BASE_URL = 'http://localhost:5031/api';
+const BASE_URL = 'https://localhost:7139/api';
 
 export const apiClient = async (endpoint, options = {}) => {
     // Retrieve the token saved during login
-    const token = localStorage.getItem('token');
-    
+    const token = localStorage.getItem('accessToken');
+
     const defaultHeaders = {
         'Content-Type': 'application/json',
         ...(token ? { 'Authorization': `Bearer ${token}` } : {})
