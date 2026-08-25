@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using TechNest.Api.Data;
 using TechNest.Api.DTOs;
 using TechNest.Api.Models;
+using TechNest.Api.Services.Interfaces;
 
 namespace TechNest.Api.Services
 {

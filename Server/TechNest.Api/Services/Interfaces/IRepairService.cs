@@ -1,6 +1,6 @@
 using TechNest.Api.DTOs;
 
-namespace TechNest.Api.Services
+namespace TechNest.Api.Services.Interfaces
 {
     public interface IRepairService
     {
