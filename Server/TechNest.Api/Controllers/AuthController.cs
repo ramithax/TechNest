@@ -48,6 +48,31 @@ namespace TechNest.Api.Controllers
         }
 
         [Authorize(Roles = "Admin")]
+        [HttpGet("users")]
+        public async Task<ActionResult> GetAllUsers()
+        {
+            var users = await service.GetUsers();
+            return Ok(users);
+        }
+
+        [Authorize(Roles = "Admin")]
+        [HttpPut("users/{id}")]
+        public async Task<ActionResult> UpdateUser(int id, UpdateUserDto dto)
+        {
+            var user = await service.UpdateUser(id, dto);
+
+            if (user == null)
+            {
+                return NotFound(new
+                {
+                    message = "User not found"
+                });
+            }
+
+            return Ok(user);
+        }
+
+        [Authorize(Roles = "Admin")]
         [HttpGet("admin-only")]
         public IActionResult AdminOnly()
         {

@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
-using TechNest.Api.Services;
 using TechNest.Api.DTOs;
+using TechNest.Api.Services.Interfaces;
 
 namespace TechNest.Api.Controllers
 {
