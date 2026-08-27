@@ -7,7 +7,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { jwtDecode } from "jwt-decode";
 
-function AdminNavbar() {
+export default function AdminNavbar() {
     const navigate = useNavigate();
 
     const token = localStorage.getItem("accessToken");
@@ -145,4 +145,3 @@ function AdminNavbar() {
     );
 }
 
-export default AdminNavbar;
