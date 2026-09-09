@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using TechNest.Api.Data;
 using TechNest.Api.Models;
-using TechNest.Api.DTOs;
+using TechNest.Api.Dtos;
 using TechNest.Api.Dtos.ProductDto;
 using TechNest.Api.Services.Interfaces;
 
