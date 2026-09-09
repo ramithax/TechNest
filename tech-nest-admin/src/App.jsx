@@ -3,7 +3,7 @@ import AdminLayout from "./Pages/AdminLayout";
 import AdminDashboard from "./components/Admin-Dashboard";
 import { LoginPage } from "./Pages/LoginPage";
 import { ProductPage } from "./Pages/ProductsPage";
-import { OrderPage } from "./Pages/OrdersPage";
+import { OrdersPage } from "./Pages/OrdersPage";
 import { CustomerPage } from "./Pages/CustomersPage";
 import { RepairPage } from "./Pages/RepairsPage";
 import { AddProductPage } from "./Pages/AddProductPage";
@@ -24,7 +24,7 @@ function App() {
 
           {/* Add these when the pages are created */}
           <Route path="products" element={<ProductPage />} />
-          <Route path="orders" element={<OrderPage />} />
+          <Route path="orders" element={<OrdersPage />} />
           <Route path="customers" element={<CustomerPage />} />
           <Route path="repairs" element={<RepairPage />} />
           <Route path="add-product" element={<AddProductPage />} />
