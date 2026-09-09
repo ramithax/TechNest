@@ -41,6 +41,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 // Services
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IPcBuildService, PcBuildService>();
 
 // JWT Authentication
 builder.Services

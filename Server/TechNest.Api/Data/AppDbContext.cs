@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using TechNest.Api.Models;
+using TechNest.Api.Models.PcBuilder;
 
 namespace TechNest.Api.Data
 {
@@ -7,6 +8,10 @@ namespace TechNest.Api.Data
     {
         public DbSet<Product> Products => Set<Product>();
         public DbSet<User> Users => Set<User>();
+        public DbSet<PcBuild> PcBuilds => Set<PcBuild>();
+        public DbSet<BuildItem> BuildItems => Set<BuildItem>();
+
+
     }
 }
     
