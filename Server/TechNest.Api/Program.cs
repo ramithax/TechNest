@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
+using System.Security.Claims;
 using System.Text;
 using TechNest.Api.Data;
 using TechNest.Api.Services;
@@ -42,6 +43,9 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 
+// Added the missing RepairService registration here:
+builder.Services.AddScoped<IRepairService, RepairService>();
+
 // JWT Authentication
 builder.Services
     .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -62,7 +66,11 @@ builder.Services
                 Encoding.UTF8.GetBytes(
                     builder.Configuration["AppSettings:Token"]!
                 )
-            )
+            ),
+
+            // IMPORTANT
+            RoleClaimType = ClaimTypes.Role,
+            NameClaimType = ClaimTypes.Name
         };
     });
 
