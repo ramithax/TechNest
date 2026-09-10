@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using TechNest.Api.Data;
 using TechNest.Api.Models;
-using TechNest.Api.DTOs;
+using TechNest.Api.Dtos;
 using TechNest.Api.Dtos.ProductDto;
 using TechNest.Api.Services.Interfaces;
 
@@ -9,23 +9,32 @@ namespace TechNest.Api.Services
 {
     public class ProductService(AppDbContext context) : IProductService
     {
-        public async Task<List<ProductResponseDto>> GetAllProducts()
+        public async Task<List<ProductResponseDto>> GetAllProducts(bool includeInactive = false)
         {
-            return await context.Products.Select(p => new ProductResponseDto
+            var query = context.Products.AsQueryable();
+
+            if (!includeInactive)
             {
-                Id = p.Id,
-                Name = p.Name,
-                Description = p.Description,
-                LabelPrice = p.LabelPrice,
-                ActualPrice = p.ActualPrice,
-                StockQuantity = p.StockQuantity,
-                Category = p.Category,
-                Brand = p.Brand,
-                Images = p.Images,
-                IsActive = p.IsActive,
-                CreatedAt = p.CreatedAt,
-                UpdatedAt = p.UpdatedAt
-            }).ToListAsync();
+                query = query.Where(p => p.IsActive);
+            }
+
+            return await query
+                .Select(p => new ProductResponseDto
+                {
+                    Id = p.Id,
+                    Name = p.Name,
+                    Description = p.Description,
+                    LabelPrice = p.LabelPrice,
+                    ActualPrice = p.ActualPrice,
+                    StockQuantity = p.StockQuantity,
+                    Category = p.Category,
+                    Brand = p.Brand,
+                    Images = p.Images,
+                    IsActive = p.IsActive,
+                    CreatedAt = p.CreatedAt,
+                    UpdatedAt = p.UpdatedAt
+                })
+                .ToListAsync();
         }
 
         public async Task<ProductResponseDto?> GetProductById(int id)

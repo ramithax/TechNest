@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using TechNest.Api.Data;
@@ -12,9 +13,11 @@ using TechNest.Api.Data;
 namespace TechNest.Api.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260821100558_SeedRepairDataFixed")]
+    partial class SeedRepairDataFixed
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -22,53 +25,6 @@ namespace TechNest.Api.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
-
-            modelBuilder.Entity("TechNest.Api.Models.PcBuilder.BuildItem", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("PcBuildId")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("ProductId")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("Quantity")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("PcBuildId");
-
-                    b.HasIndex("ProductId");
-
-                    b.ToTable("BuildItems");
-                });
-
-            modelBuilder.Entity("TechNest.Api.Models.PcBuilder.PcBuild", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int>("UserId")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("PcBuilds");
-                });
 
             modelBuilder.Entity("TechNest.Api.Models.Product", b =>
                 {
@@ -145,9 +101,6 @@ namespace TechNest.Api.Migrations
 
                     b.Property<decimal>("EstimatedCost")
                         .HasColumnType("numeric");
-
-                    b.Property<string>("ImageUrl")
-                        .HasColumnType("text");
 
                     b.Property<string>("IssueDescription")
                         .IsRequired()
@@ -352,39 +305,24 @@ namespace TechNest.Api.Migrations
                     b.ToTable("Users");
                 });
 
-            modelBuilder.Entity("TechNest.Api.Models.PcBuilder.BuildItem", b =>
+            modelBuilder.Entity("TechNest.Api.Models.Repair", b =>
                 {
-                    b.HasOne("TechNest.Api.Models.PcBuilder.PcBuild", "PcBuild")
-                        .WithMany("BuildItems")
-                        .HasForeignKey("PcBuildId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("TechNest.Api.Models.Product", "Product")
+                    b.HasOne("TechNest.Api.Models.RepairService", "RepairService")
                         .WithMany()
-                        .HasForeignKey("ProductId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("RepairServiceId");
 
-                    b.Navigation("PcBuild");
+                    b.HasOne("TechNest.Api.Models.Technician", "Technician")
+                        .WithMany("AssignedRepairs")
+                        .HasForeignKey("TechnicianId");
 
-                    b.Navigation("Product");
+                    b.Navigation("RepairService");
+
+                    b.Navigation("Technician");
                 });
 
-            modelBuilder.Entity("TechNest.Api.Models.PcBuilder.PcBuild", b =>
+            modelBuilder.Entity("TechNest.Api.Models.Technician", b =>
                 {
-                    b.HasOne("TechNest.Api.Models.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("TechNest.Api.Models.PcBuilder.PcBuild", b =>
-                {
-                    b.Navigation("BuildItems");
+                    b.Navigation("AssignedRepairs");
                 });
 #pragma warning restore 612, 618
         }
