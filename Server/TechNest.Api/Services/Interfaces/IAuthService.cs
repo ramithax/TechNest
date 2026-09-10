@@ -9,5 +9,7 @@ namespace TechNest.Api.Services.Interfaces
         Task<UserResponseDto?> Register(RegisterDto register);
         Task<TokenResponseDto?> Login(LoginDto login);
         Task<TokenResponseDto?> RefreshToken(RefreshTokenRequestDto request);
+        Task<IEnumerable<UserResponseDto>> GetUsers();
+        Task<UserResponseDto?> UpdateUser(int id, UpdateUserDto dto);
     }
 }

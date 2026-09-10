@@ -170,37 +170,76 @@ namespace TechNest.Api.Services
             return refreshToken;
         }
 
+        public async Task<IEnumerable<UserResponseDto>> GetUsers()
+        {
+            return await context.Users
+                .Select(user => new UserResponseDto
+                {
+                    Id = user.Id,
+                    Name = user.Name,
+                    Email = user.Email,
+                    Role = user.Role,
+                    CreatedAt = user.CreatedAt,
+                    IsBlocked = user.Isblocked
+                })
+                .ToListAsync();
+        }
+
+        public async Task<UserResponseDto?> UpdateUser(int id, UpdateUserDto dto)
+        {
+            var user = await context.Users.FindAsync(id);
+
+            if (user == null)
+            {
+                return null;
+            }
+
+            user.Role = dto.Role;
+            user.Isblocked = dto.IsBlocked;
+
+            await context.SaveChangesAsync();
+
+            return new UserResponseDto
+            {
+                Id = user.Id,
+                Name = user.Name,
+                Email = user.Email,
+                Role = user.Role,
+                CreatedAt = user.CreatedAt,
+                IsBlocked = user.Isblocked
+            };
+        }
+
 
         // CREATE JWT ACCESS TOKEN
         private string CreateToken(User user)
         {
             var claims = new List<Claim>
-            {
-                new Claim(
-                    ClaimTypes.Name,
-                    user.Name
-                ),
+    {
+        new Claim(
+            ClaimTypes.Name,
+            user.Name
+        ),
 
-                new Claim(
-                    ClaimTypes.NameIdentifier,
-                    user.Id.ToString()
-                ),
+        new Claim(
+            ClaimTypes.NameIdentifier,
+            user.Id.ToString()
+        ),
 
-                new Claim(
-                    ClaimTypes.Role,
-                    user.Role
-                ),
+        new Claim(
+            ClaimTypes.Email,
+            user.Email
+        ),
 
-                new Claim(
-                    ClaimTypes.Email,
-                    user.Email
-                )
-            };
+        new Claim(
+            ClaimTypes.Role,
+            user.Role.Trim()
+        )
+    };
 
-            var tokenKey =
-                configuration.GetValue<string>(
-                    "AppSettings:Token"
-                );
+            var tokenKey = configuration.GetValue<string>(
+                "AppSettings:Token"
+            );
 
             if (string.IsNullOrEmpty(tokenKey))
             {
