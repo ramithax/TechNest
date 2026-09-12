@@ -25,7 +25,6 @@ namespace TechNest.Api.Services
                     Status = o.Status,
                     TotalAmount = o.TotalAmount,
                     TrackingNumber = o.TrackingNumber,
-                    AdminNotes = o.AdminNotes,
                     CreatedAt = o.CreatedAt,
                     UpdatedAt = o.UpdatedAt,
                     Items = o.Items.Select(i => new OrderItemResponseDto
@@ -58,7 +57,6 @@ namespace TechNest.Api.Services
                     Status = o.Status,
                     TotalAmount = o.TotalAmount,
                     TrackingNumber = o.TrackingNumber,
-                    AdminNotes = o.AdminNotes,
                     CreatedAt = o.CreatedAt,
                     UpdatedAt = o.UpdatedAt,
                     Items = o.Items.Select(i => new OrderItemResponseDto
@@ -133,7 +131,6 @@ namespace TechNest.Api.Services
                 Status = newOrder.Status,
                 TotalAmount = newOrder.TotalAmount,
                 TrackingNumber = newOrder.TrackingNumber,
-                AdminNotes = newOrder.AdminNotes,
                 CreatedAt = newOrder.CreatedAt,
                 UpdatedAt = newOrder.UpdatedAt,
                 Items = newOrder.Items.Select(i => new OrderItemResponseDto
@@ -148,20 +145,13 @@ namespace TechNest.Api.Services
             };
         }
 
-        public async Task<bool> UpdateOrderStatus(int id, string newStatus, string? trackingNumber = null, string? adminNotes = null)
+        public async Task<bool> UpdateOrderStatus(int id, string newStatus, string? trackingNumber = null)
         {
             var order = await context.Orders.FindAsync(id);
             if (order is null) return false;
 
             order.Status = newStatus;
-            if (!string.IsNullOrWhiteSpace(trackingNumber))
-            {
-                order.TrackingNumber = trackingNumber;
-            }
-            if (!string.IsNullOrWhiteSpace(adminNotes))
-            {
-                order.AdminNotes = adminNotes;
-            }
+            order.TrackingNumber = trackingNumber;
             order.UpdatedAt = DateTime.UtcNow;
 
             await context.SaveChangesAsync();

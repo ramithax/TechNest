@@ -22,7 +22,6 @@
         public string Status { get; set; } = string.Empty;
         public decimal TotalAmount { get; set; }
         public string? TrackingNumber { get; set; }
-        public string? AdminNotes { get; set; }
         public List<OrderItemResponseDto> Items { get; set; } = new();
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }

@@ -22,8 +22,6 @@
 
         public string? TrackingNumber { get; set; }
 
-        public string? AdminNotes { get; set; }
-
         public List<OrderItem> Items { get; set; } = new();
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;

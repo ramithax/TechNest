@@ -10,7 +10,7 @@ namespace TechNest.Api.Services.Interfaces
 
         Task<OrderResponseDto> CreateOrder(CreateOrderDto dto);
 
-        Task<bool> UpdateOrderStatus(int id, string newStatus, string? trackingNumber = null, string? adminNotes = null);
+        Task<bool> UpdateOrderStatus(int id, string newStatus, string? trackingNumber = null);
 
         Task<bool> CancelOrder(int id);
     }

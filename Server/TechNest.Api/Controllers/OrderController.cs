@@ -44,9 +44,9 @@ namespace TechNest.Api.Controllers
         }
 
         [HttpPut("{id}/status")]
-        public async Task<ActionResult> UpdateOrderStatus(int id, [FromQuery] string newStatus, [FromQuery] string? trackingNumber = null, [FromQuery] string? adminNotes = null)
+        public async Task<ActionResult> UpdateOrderStatus(int id, [FromBody] UpdateOrderStatusDto dto)
         {
-            var updated = await service.UpdateOrderStatus(id, newStatus, trackingNumber, adminNotes);
+            var updated = await service.UpdateOrderStatus(id, dto.Status, dto.TrackingNumber);
             return updated ? NoContent() : NotFound("Order not found");
         }
 
