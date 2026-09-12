@@ -1,7 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using TechNest.Api.Dtos;
 using TechNest.Api.Dtos.ProductDto;
-using TechNest.Api.DTOs;
 using TechNest.Api.Services.Interfaces;
 
 namespace TechNest.Api.Controllers;

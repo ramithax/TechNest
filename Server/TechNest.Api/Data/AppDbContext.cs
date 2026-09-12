@@ -10,6 +10,7 @@ namespace TechNest.Api.Data
         public DbSet<User> Users => Set<User>();
         public DbSet<PcBuild> PcBuilds => Set<PcBuild>();
         public DbSet<BuildItem> BuildItems => Set<BuildItem>();
+        public DbSet<Product> Products => Set<Product>();
 
 
     }
