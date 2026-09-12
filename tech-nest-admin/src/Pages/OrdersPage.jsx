@@ -504,7 +504,6 @@ export function OrdersPage() {
                                     )}
                                     <option value="Dispatched">Dispatched</option>
                                     <option value="Completed">Completed</option>
-                                    <option value="Cancelled">Cancelled</option>
                                 </select>
                             </div>
 
