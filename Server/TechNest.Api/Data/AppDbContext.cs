@@ -1,20 +1,21 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using TechNest.Api.Models;
+using TechNest.Api.Models.PcBuilder;
 
 namespace TechNest.Api.Data
 {
     public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(options)
     {
         public DbSet<User> Users => Set<User>();
+        public DbSet<PcBuild> PcBuilds => Set<PcBuild>();
+        public DbSet<BuildItem> BuildItems => Set<BuildItem>();
         public DbSet<Product> Products => Set<Product>();
         public DbSet<Order> Orders => Set<Order>();
         public DbSet<OrderItem> OrderItems => Set<OrderItem>();
-
-        // Repairs Module Tables
-        public DbSet<Technician> Technicians => Set<Technician>();
-        public DbSet<RepairService> RepairServices => Set<RepairService>();
         public DbSet<Repair> Repairs => Set<Repair>();
+        public DbSet<RepairService> RepairServices => Set<RepairService>();
+        public DbSet<Technician> Technicians => Set<Technician>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

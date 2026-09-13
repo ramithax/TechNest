@@ -42,11 +42,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 // Services
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
-builder.Services.AddScoped<IOrderService, OrderService>();
-builder.Services.AddScoped<IOrderService, OrderService>();
-
-// Added the missing RepairService registration here:
-builder.Services.AddScoped<IRepairService, RepairService>();
+builder.Services.AddScoped<IPcBuildService, PcBuildService>();
 
 // JWT Authentication
 builder.Services

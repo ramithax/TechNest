@@ -106,6 +106,53 @@ namespace TechNest.Api.Migrations
                     b.ToTable("OrderItems");
                 });
 
+            modelBuilder.Entity("TechNest.Api.Models.PcBuilder.BuildItem", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("PcBuildId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("ProductId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PcBuildId");
+
+                    b.HasIndex("ProductId");
+
+                    b.ToTable("BuildItems");
+                });
+
+            modelBuilder.Entity("TechNest.Api.Models.PcBuilder.PcBuild", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("PcBuilds");
+                });
+
             modelBuilder.Entity("TechNest.Api.Models.Product", b =>
                 {
                     b.Property<int>("Id")
@@ -420,6 +467,38 @@ namespace TechNest.Api.Migrations
             modelBuilder.Entity("TechNest.Api.Models.Technician", b =>
                 {
                     b.Navigation("AssignedRepairs");
+                });
+
+            modelBuilder.Entity("TechNest.Api.Models.PcBuilder.BuildItem", b =>
+                {
+                    b.HasOne("TechNest.Api.Models.PcBuilder.PcBuild", "PcBuild")
+                        .WithMany("BuildItems")
+                        .HasForeignKey("PcBuildId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("TechNest.Api.Models.Product", "Product")
+                        .WithMany()
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("PcBuild");
+
+                    b.Navigation("Product");
+                });
+
+            modelBuilder.Entity("TechNest.Api.Models.PcBuilder.PcBuild", b =>
+                {
+                    b.HasOne("TechNest.Api.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+
+                    b.Navigation("BuildItems");
                 });
 #pragma warning restore 612, 618
         }
