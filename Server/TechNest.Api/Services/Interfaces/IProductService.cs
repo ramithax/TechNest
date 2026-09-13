@@ -1,5 +1,5 @@
 ﻿using TechNest.Api.Models;
-using TechNest.Api.DTOs;
+using TechNest.Api.Dtos;
 using TechNest.Api.Dtos.ProductDto;
 
 namespace TechNest.Api.Services.Interfaces

@@ -8,13 +8,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="obj\Debug\net10.0\.NETCoreApp,Version=v10.0.AssemblyAttributes.cs" />
-    <Compile Include="obj\Debug\net10.0\TechNest.Api.AssemblyInfo.cs" />
-    <Compile Include="obj\Debug\net10.0\TechNest.Api.GlobalUsings.g.cs" />
-    <Compile Include="obj\Debug\net10.0\TechNest.Api.MvcApplicationPartsAssemblyInfo.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Content Include="obj\Debug\net10.0\ApiEndpoints.json" />
     <Content Include="obj\Debug\net10.0\EndpointInfo\TechNest.Api.json" />
     <Content Include="obj\Debug\net10.0\rjsmcshtml.dswa.cache.json" />
