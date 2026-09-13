@@ -1,9 +1,9 @@
+using System.Security.Claims;
+using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
-using System.Security.Claims;
-using System.Text;
 using TechNest.Api.Data;
 using TechNest.Api.Services;
 using TechNest.Api.Services.Interfaces;
@@ -43,6 +43,8 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IPcBuildService, PcBuildService>();
+builder.Services.AddScoped<IOrderService, OrderService>();
+builder.Services.AddScoped<IRepairService, RepairService>();
 
 // JWT Authentication
 builder.Services
