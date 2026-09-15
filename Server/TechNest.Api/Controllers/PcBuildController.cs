@@ -161,6 +161,32 @@ namespace TechNest.Api.Controllers
         }
 
 
+        // GET: api/PcBuild/admin
+        [HttpGet("admin")]
+        [Authorize(Roles = "Admin")]
+        public async Task<ActionResult<List<PcBuildDto>>> GetAllBuilds()
+        {
+            var builds = await service.GetAllBuilds();
+
+            return Ok(builds);
+        }
+
+
+        // GET: api/PcBuild/admin/{buildId}
+        [HttpGet("admin/{buildId:int}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<ActionResult<PcBuildDto>> GetBuildForAdmin(
+            int buildId)
+        {
+            var build = await service.GetBuildForAdmin(buildId);
+
+            if (build == null)
+                return NotFound("PC build not found.");
+
+            return Ok(build);
+        }
+
+
         // Get logged-in user's ID from JWT
         private int? GetUserId()
         {

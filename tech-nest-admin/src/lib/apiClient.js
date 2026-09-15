@@ -1,4 +1,4 @@
-const BASE_URL = 'https://localhost:7139/api';
+const BASE_URL = 'https://localhost:5031/api';
 
 export const apiClient = async (endpoint, options = {}) => {
     // Retrieve the token saved during login

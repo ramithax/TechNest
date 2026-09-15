@@ -35,7 +35,6 @@ export function OrdersPage() {
         try {
             await api.delete(`/Order/${id}`);
 
-            // Local state එකේ status එක Cancelled ලෙස update කිරීම
             setOrders((currentOrders) =>
                 currentOrders.map((order) =>
                     order.id === id ? { ...order, status: "Cancelled" } : order

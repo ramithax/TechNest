@@ -25,6 +25,7 @@ namespace TechNest.Api.Services
             return new PcBuildDto
             {
                 Id = build.Id,
+                UserId = build.UserId,
                 CreatedAt = build.CreatedAt,
                 Items = new List<BuildItemDto>()
             };
@@ -47,6 +48,7 @@ namespace TechNest.Api.Services
             return new PcBuildDto
             {
                 Id = build.Id,
+                UserId = build.UserId,
                 CreatedAt = build.CreatedAt,
 
                 Items = build.BuildItems.Select(item => new BuildItemDto
@@ -279,6 +281,74 @@ namespace TechNest.Api.Services
                 PcBuildId = build.Id,
                 Items = items,
                 TotalPrice = totalPrice
+            };
+        }
+
+        // Get all PC builds for admin
+        public async Task<List<PcBuildDto>> GetAllBuilds()
+        {
+            var builds = await context.PcBuilds
+                .Include(b => b.BuildItems)
+                .ThenInclude(bi => bi.Product)
+                .OrderByDescending(b => b.CreatedAt)
+                .ToListAsync();
+
+            return builds.Select(build => new PcBuildDto
+            {
+                Id = build.Id,
+                CreatedAt = build.CreatedAt,
+
+                Items = build.BuildItems.Select(item => new BuildItemDto
+                {
+                    Id = item.Id,
+                    ProductId = item.ProductId,
+                    ProductName = item.Product.Name,
+                    Category = item.Product.Category,
+                    Brand = item.Product.Brand,
+                    UnitPrice = item.Product.ActualPrice,
+                    Quantity = item.Quantity,
+                    TotalPrice =
+                        item.Product.ActualPrice *
+                        item.Quantity,
+                    Images = item.Product.Images
+
+                }).ToList()
+
+            }).ToList();
+        }
+
+
+        // Get a specific PC build for admin
+        public async Task<PcBuildDto?> GetBuildForAdmin(int buildId)
+        {
+            var build = await context.PcBuilds
+                .Include(b => b.BuildItems)
+                .ThenInclude(bi => bi.Product)
+                .FirstOrDefaultAsync(b => b.Id == buildId);
+
+            if (build is null)
+                return null;
+
+            return new PcBuildDto
+            {
+                Id = build.Id,
+                CreatedAt = build.CreatedAt,
+
+                Items = build.BuildItems.Select(item => new BuildItemDto
+                {
+                    Id = item.Id,
+                    ProductId = item.ProductId,
+                    ProductName = item.Product.Name,
+                    Category = item.Product.Category,
+                    Brand = item.Product.Brand,
+                    UnitPrice = item.Product.ActualPrice,
+                    Quantity = item.Quantity,
+                    TotalPrice =
+                        item.Product.ActualPrice *
+                        item.Quantity,
+                    Images = item.Product.Images
+
+                }).ToList()
             };
         }
     }

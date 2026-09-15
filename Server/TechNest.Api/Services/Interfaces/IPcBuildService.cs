@@ -8,6 +8,10 @@ namespace TechNest.Api.Services.Interfaces
 
         Task<PcBuildDto?> GetBuild(int buildId, int userId);
 
+        Task<List<PcBuildDto>> GetAllBuilds();
+
+        Task<PcBuildDto?> GetBuildForAdmin(int buildId);
+        
         Task<BuildItemDto?> AddBuildItem(int buildId, int userId, BuildItemRequestDto request);
 
         Task<BuildItemDto?> UpdateBuildItem(int buildId, int itemId, int userId, BuildItemRequestDto request);

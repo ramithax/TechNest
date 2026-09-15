@@ -6,6 +6,7 @@ import { ProductPage } from "./Pages/ProductsPage";
 import { OrdersPage } from "./Pages/OrdersPage";
 import { CustomerPage } from "./Pages/CustomersPage";
 import { RepairPage } from "./Pages/RepairsPage";
+import { PcBuildsPage } from "./Pages/PcBuildsPage";
 import { AddProductPage } from "./Pages/AddProductPage";
 import { Toaster } from "@/components/ui/sonner";
 import { UpdateProductPage } from "./Pages/UpdateProductPage";
@@ -30,6 +31,7 @@ function App() {
           <Route path="orders" element={<OrdersPage />} />
           <Route path="customers" element={<CustomerPage />} />
           <Route path="repairs" element={<RepairPage />} />
+          <Route path="pc-builder" element={<PcBuildsPage />} />
           <Route path="add-product" element={<AddProductPage />} />
           <Route path="edit-product/:productId" element={<UpdateProductPage />} />
 
