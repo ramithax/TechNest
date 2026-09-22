@@ -55,10 +55,10 @@ export function OrdersPage() {
                 prev.map((order) =>
                     order.id === selectedOrder.id
                         ? {
-                              ...order,
-                              status: modalStatus,
-                              trackingNumber,
-                          }
+                            ...order,
+                            status: modalStatus,
+                            trackingNumber,
+                        }
                         : order
                 )
             );

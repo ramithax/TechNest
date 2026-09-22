@@ -47,8 +47,8 @@ function AdminSidebar() {
                                 key={item.name}
                                 onClick={() => navigate(item.path)}
                                 className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition ${isActive(item.path)
-                                        ? "bg-zinc-800 text-white"
-                                        : "text-zinc-400 hover:bg-zinc-900 hover:text-white"
+                                    ? "bg-zinc-800 text-white"
+                                    : "text-zinc-400 hover:bg-zinc-900 hover:text-white"
                                     }`}
                             >
                                 <span className="w-5 text-center text-lg">
@@ -73,8 +73,8 @@ function AdminSidebar() {
                                 key={item.name}
                                 onClick={() => navigate(item.path)}
                                 className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition ${isActive(item.path)
-                                        ? "bg-zinc-800 text-white"
-                                        : "text-zinc-400 hover:bg-zinc-900 hover:text-white"
+                                    ? "bg-zinc-800 text-white"
+                                    : "text-zinc-400 hover:bg-zinc-900 hover:text-white"
                                     }`}
                             >
                                 <span className="w-5 text-center text-lg">

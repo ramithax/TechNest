@@ -68,7 +68,6 @@ builder.Services
                 )
             ),
 
-            // IMPORTANT
             RoleClaimType = ClaimTypes.Role,
             NameClaimType = ClaimTypes.Name
         };
@@ -77,10 +76,10 @@ builder.Services
 // CORS
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("ReactApp", policy =>
+    options.AddPolicy("DevelopmentCors", policy =>
     {
         policy
-            .WithOrigins("http://localhost:5173")
+            .AllowAnyOrigin()
             .AllowAnyHeader()
             .AllowAnyMethod();
     });
@@ -95,11 +94,13 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+// CORS
+app.UseCors("DevelopmentCors");
 
-app.UseCors("ReactApp");
+// Temporarily disabled for Flutter Web local development
+// app.UseHttpsRedirection();
 
-// IMPORTANT: Authentication must come before Authorization
+// Authentication must come before Authorization
 app.UseAuthentication();
 app.UseAuthorization();
 
