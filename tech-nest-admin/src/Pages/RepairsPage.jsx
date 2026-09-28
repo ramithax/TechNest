@@ -39,7 +39,7 @@ export function RepairPage() {
     ];
 
     const FALLBACK_IMAGE =
-        "https://placehold.co/300x300/18181b/a1a1aa?text=No+Image";
+        "https://placehold.co/300x300/f4f4f5/71717a?text=No+Image";
 
     const totalCount = repairs.length;
 
@@ -134,22 +134,22 @@ export function RepairPage() {
     const getStatusStyle = (status) => {
         switch (status) {
             case "Completed":
-                return "bg-green-950/40 text-green-400 border-green-900/50";
+                return "bg-emerald-50 text-emerald-700 border-emerald-200";
 
             case "Cancelled":
-                return "bg-red-950/40 text-red-400 border-red-900/50";
+                return "bg-red-50 text-red-700 border-red-200";
 
             case "AwaitingApproval":
-                return "bg-blue-950/40 text-blue-400 border-blue-900/50";
+                return "bg-blue-50 text-blue-700 border-blue-200";
 
             case "InProgress":
-                return "bg-emerald-950/40 text-emerald-400 border-emerald-900/50";
+                return "bg-emerald-50 text-emerald-700 border-emerald-200";
 
             case "Diagnosed":
-                return "bg-purple-950/40 text-purple-400 border-purple-900/50";
+                return "bg-purple-50 text-purple-700 border-purple-200";
 
             default:
-                return "bg-amber-950/40 text-amber-400 border-amber-900/50";
+                return "bg-amber-50 text-amber-700 border-amber-200";
         }
     };
 
@@ -195,16 +195,20 @@ export function RepairPage() {
     };
 
     return (
-        <div className="min-h-screen bg-black text-white p-6">
+        <div className="relative min-h-screen overflow-hidden bg-zinc-50 p-6 font-sans text-zinc-900 md:p-8">
+
+            {/* Background accents */}
+            <div className="pointer-events-none absolute -left-24 -top-24 h-72 w-72 rounded-full bg-emerald-200/30 blur-3xl" />
+            <div className="pointer-events-none absolute -right-24 top-1/3 h-72 w-72 rounded-full bg-blue-200/30 blur-3xl" />
 
             {/* Header */}
-            <div className="flex items-center justify-between mb-6">
+            <div className="relative mb-6">
                 <div>
-                    <h1 className="text-2xl font-semibold text-white">
+                    <h1 className="text-2xl font-semibold tracking-tight text-zinc-900">
                         Repairs
                     </h1>
 
-                    <p className="text-sm text-zinc-500 mt-1">
+                    <p className="mt-1 text-sm text-zinc-500">
                         Monitor and update customer repair requests
                     </p>
                 </div>
@@ -212,30 +216,28 @@ export function RepairPage() {
 
             {/* Error */}
             {error && (
-                <div className="mb-4 rounded-lg border border-red-900/50 bg-red-950/30 px-4 py-3 text-sm text-red-400">
+                <div className="relative mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
                     {error}
                 </div>
             )}
 
-            {/* Table */}
-            <div className="bg-zinc-950 border border-zinc-800/80 rounded-xl shadow-2xl overflow-hidden">
+            {/* Table Card */}
+            <div className="relative overflow-hidden rounded-2xl border border-zinc-200 bg-white/80 shadow-lg shadow-zinc-200/50 backdrop-blur-xl">
 
                 {loading ? (
-                    <div className="text-center py-16 text-zinc-500">
+                    <div className="py-16 text-center text-zinc-500">
                         Loading repairs...
                     </div>
                 ) : repairs.length === 0 ? (
-                    <div className="text-center py-16 text-zinc-500">
+                    <div className="py-16 text-center text-zinc-500">
                         No repairs found
                     </div>
                 ) : (
                     <>
                         <div className="overflow-x-auto">
+                            <table className="w-full text-left text-sm">
 
-                            <table className="w-full text-sm text-left">
-
-                                <thead className="bg-zinc-900/80 text-zinc-500 uppercase text-xs border-b border-zinc-800">
-
+                                <thead className="border-b border-zinc-200 bg-zinc-50 text-xs uppercase text-zinc-500">
                                     <tr>
                                         <th className="px-6 py-4">
                                             Ticket
@@ -257,21 +259,16 @@ export function RepairPage() {
                                             Status
                                         </th>
                                     </tr>
-
                                 </thead>
 
                                 <tbody>
-
                                     {paginatedRepairs.map((repair) => (
-
                                         <tr
                                             key={repair.id}
-                                            className="border-b border-zinc-900 hover:bg-zinc-900/60 transition-colors"
+                                            className="border-b border-zinc-100 transition-colors hover:bg-zinc-50"
                                         >
-
                                             {/* Ticket */}
                                             <td className="px-6 py-5">
-
                                                 <div className="flex items-center gap-4">
 
                                                     <button
@@ -293,7 +290,7 @@ export function RepairPage() {
                                                                 repair.deviceModel ||
                                                                 "Repair device"
                                                             }
-                                                            className="w-20 h-20 rounded-lg object-cover bg-zinc-900 border border-zinc-800 hover:border-zinc-600 transition"
+                                                            className="h-20 w-20 rounded-xl border border-zinc-200 bg-zinc-100 object-cover transition hover:border-zinc-400"
                                                             onError={(e) => {
                                                                 e.currentTarget.src =
                                                                     FALLBACK_IMAGE;
@@ -302,11 +299,11 @@ export function RepairPage() {
                                                     </button>
 
                                                     <div>
-                                                        <p className="font-medium text-zinc-100">
+                                                        <p className="font-semibold text-zinc-900">
                                                             Repair #{repair.id}
                                                         </p>
 
-                                                        <p className="text-xs text-zinc-600 mt-1">
+                                                        <p className="mt-1 text-xs text-zinc-500">
                                                             Customer ID:{" "}
                                                             {repair.customerId}
                                                         </p>
@@ -319,63 +316,54 @@ export function RepairPage() {
                                                                     repair.deviceModel
                                                                 )
                                                             }
-                                                            className="text-xs text-zinc-500 hover:text-zinc-300 mt-2 transition"
+                                                            className="mt-2 text-xs text-zinc-500 transition hover:text-zinc-900"
                                                         >
                                                             View image
                                                         </button>
                                                     </div>
-
                                                 </div>
-
                                             </td>
 
                                             {/* Device */}
                                             <td className="px-6 py-5">
-
                                                 <div>
-                                                    <p className="font-medium text-zinc-200">
+                                                    <p className="font-semibold text-zinc-800">
                                                         {repair.deviceModel}
                                                     </p>
 
-                                                    <p className="text-xs text-zinc-600 mt-1">
+                                                    <p className="mt-1 text-xs text-zinc-500">
                                                         ID: {repair.id}
                                                     </p>
                                                 </div>
-
                                             </td>
 
                                             {/* Issue */}
-                                            <td className="px-6 py-5 text-zinc-400 max-w-md">
-
+                                            <td className="max-w-md px-6 py-5 text-zinc-600">
                                                 <p className="line-clamp-3">
                                                     {repair.issueDescription ||
                                                         "No issue description provided."}
                                                 </p>
-
                                             </td>
 
                                             {/* Appointment */}
                                             <td className="px-6 py-5">
-
                                                 <div>
-                                                    <p className="text-zinc-200 font-medium">
+                                                    <p className="font-semibold text-zinc-800">
                                                         {formatAppointmentDate(
                                                             repair.appointmentDate
                                                         )}
                                                     </p>
 
-                                                    <p className="text-xs text-zinc-500 mt-1">
+                                                    <p className="mt-1 text-xs text-zinc-500">
                                                         {formatAppointmentTime(
                                                             repair.appointmentDate
                                                         )}
                                                     </p>
                                                 </div>
-
                                             </td>
 
                                             {/* Status */}
                                             <td className="px-6 py-5 text-right">
-
                                                 <select
                                                     value={repair.status}
                                                     onChange={(e) =>
@@ -384,7 +372,7 @@ export function RepairPage() {
                                                             e.target.value
                                                         )
                                                     }
-                                                    className={`cursor-pointer appearance-none text-center outline-none inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium border ${getStatusStyle(
+                                                    className={`cursor-pointer appearance-none rounded-full border px-2.5 py-1 text-center text-xs font-semibold outline-none ${getStatusStyle(
                                                         repair.status
                                                     )}`}
                                                 >
@@ -393,36 +381,30 @@ export function RepairPage() {
                                                             <option
                                                                 key={option}
                                                                 value={option}
-                                                                className="bg-zinc-900 text-white"
+                                                                className="bg-white text-zinc-900"
                                                             >
                                                                 {option}
                                                             </option>
                                                         )
                                                     )}
                                                 </select>
-
                                             </td>
-
                                         </tr>
-
                                     ))}
-
                                 </tbody>
-
                             </table>
-
                         </div>
 
                         {/* Pagination */}
-                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 px-6 py-4 border-t border-zinc-800">
+                        <div className="flex flex-col gap-4 border-t border-zinc-200 px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
 
                             <div className="text-sm text-zinc-500">
                                 Showing{" "}
-                                <span className="text-zinc-300">
+                                <span className="font-semibold text-zinc-800">
                                     {paginatedRepairs.length}
                                 </span>{" "}
                                 of{" "}
-                                <span className="text-zinc-300">
+                                <span className="font-semibold text-zinc-800">
                                     {totalCount}
                                 </span>{" "}
                                 repairs
@@ -443,18 +425,18 @@ export function RepairPage() {
                                         page === 1 ||
                                         loading
                                     }
-                                    className="px-3 py-1.5 text-sm rounded-md border border-zinc-800 bg-zinc-900 text-zinc-300 hover:bg-zinc-800 hover:text-white disabled:opacity-40 disabled:cursor-not-allowed transition"
+                                    className="rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-sm text-zinc-600 transition hover:bg-zinc-50 hover:text-zinc-900 disabled:cursor-not-allowed disabled:opacity-40"
                                 >
                                     Previous
                                 </button>
 
-                                <div className="px-3 py-1.5 text-sm text-zinc-400 whitespace-nowrap">
+                                <div className="whitespace-nowrap px-3 py-1.5 text-sm text-zinc-500">
                                     Page{" "}
-                                    <span className="text-white font-medium">
+                                    <span className="font-semibold text-zinc-900">
                                         {page}
                                     </span>{" "}
                                     of{" "}
-                                    <span className="text-white font-medium">
+                                    <span className="font-semibold text-zinc-900">
                                         {totalPages}
                                     </span>
                                 </div>
@@ -472,17 +454,15 @@ export function RepairPage() {
                                         page >= totalPages ||
                                         loading
                                     }
-                                    className="px-3 py-1.5 text-sm rounded-md border border-zinc-800 bg-zinc-900 text-zinc-300 hover:bg-zinc-800 hover:text-white disabled:opacity-40 disabled:cursor-not-allowed transition"
+                                    className="rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-sm text-zinc-600 transition hover:bg-zinc-50 hover:text-zinc-900 disabled:cursor-not-allowed disabled:opacity-40"
                                 >
                                     Next
                                 </button>
 
                             </div>
-
                         </div>
                     </>
                 )}
-
             </div>
 
             {/* Status Confirmation Dialog */}
@@ -497,36 +477,34 @@ export function RepairPage() {
                     setStatusDialogOpen(open);
                 }}
             >
-                <AlertDialogContent className="bg-zinc-950 border border-zinc-800 text-white">
+                <AlertDialogContent className="border border-zinc-200 bg-white text-zinc-900 shadow-xl">
 
                     <AlertDialogHeader>
-
-                        <AlertDialogTitle className="text-lg font-semibold text-white">
+                        <AlertDialogTitle className="text-lg font-semibold text-zinc-900">
                             Change Repair Status?
                         </AlertDialogTitle>
 
-                        <AlertDialogDescription className="text-zinc-400">
+                        <AlertDialogDescription className="text-zinc-500">
                             Are you sure you want to change the status of{" "}
-                            <span className="font-medium text-white">
+                            <span className="font-semibold text-zinc-900">
                                 Repair #{selectedRepair?.id}
                             </span>{" "}
                             from{" "}
-                            <span className="font-medium text-white">
+                            <span className="font-semibold text-zinc-900">
                                 {selectedRepair?.status}
                             </span>{" "}
                             to{" "}
-                            <span className="font-medium text-white">
+                            <span className="font-semibold text-zinc-900">
                                 {selectedStatus}
                             </span>
                             ?
                         </AlertDialogDescription>
-
                     </AlertDialogHeader>
 
                     <AlertDialogFooter>
 
                         <AlertDialogCancel
-                            className="bg-zinc-900 border-zinc-700 text-zinc-300 hover:bg-zinc-800 hover:text-white"
+                            className="border-zinc-200 bg-white text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900"
                             onClick={() => {
                                 setSelectedRepair(null);
                                 setSelectedStatus("");
@@ -537,36 +515,33 @@ export function RepairPage() {
 
                         <AlertDialogAction
                             onClick={handleStatusUpdate}
-                            className="bg-white text-black hover:bg-zinc-200"
+                            className="bg-zinc-900 font-semibold text-white hover:bg-zinc-800"
                         >
                             Confirm Change
                         </AlertDialogAction>
 
                     </AlertDialogFooter>
-
                 </AlertDialogContent>
             </AlertDialog>
 
             {/* Image Preview */}
             {imageOpen && (
                 <div
-                    className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-6"
+                    className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-900/40 p-6 backdrop-blur-sm"
                     onClick={() => setImageOpen(false)}
                 >
-
                     <div
-                        className="relative w-full max-w-3xl bg-zinc-950 border border-zinc-800 rounded-xl shadow-2xl p-5"
+                        className="relative w-full max-w-3xl rounded-2xl border border-zinc-200 bg-white p-5 shadow-2xl"
                         onClick={(e) => e.stopPropagation()}
                     >
-
-                        <div className="flex items-center justify-between mb-4">
+                        <div className="mb-4 flex items-center justify-between">
 
                             <div>
-                                <h2 className="text-lg font-semibold text-white">
+                                <h2 className="text-lg font-semibold text-zinc-900">
                                     {selectedDevice}
                                 </h2>
 
-                                <p className="text-sm text-zinc-500 mt-1">
+                                <p className="mt-1 text-sm text-zinc-500">
                                     Repair image
                                 </p>
                             </div>
@@ -574,14 +549,13 @@ export function RepairPage() {
                             <button
                                 type="button"
                                 onClick={() => setImageOpen(false)}
-                                className="px-3 py-1.5 text-xs font-medium rounded-md bg-zinc-900 border border-zinc-800 text-zinc-300 hover:bg-zinc-800 hover:text-white transition"
+                                className="rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-xs font-semibold text-zinc-600 transition hover:bg-zinc-50 hover:text-zinc-900"
                             >
                                 Close
                             </button>
-
                         </div>
 
-                        <div className="flex items-center justify-center bg-zinc-900 border border-zinc-800 rounded-lg overflow-hidden min-h-[400px]">
+                        <div className="flex min-h-[400px] items-center justify-center overflow-hidden rounded-xl border border-zinc-200 bg-zinc-50">
 
                             <img
                                 src={
@@ -597,12 +571,9 @@ export function RepairPage() {
                             />
 
                         </div>
-
                     </div>
-
                 </div>
             )}
-
         </div>
     );
 }

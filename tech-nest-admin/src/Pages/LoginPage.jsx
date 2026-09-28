@@ -1,333 +1,189 @@
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import api from "@/lib/axios";
-import { toast } from "sonner";
 import { jwtDecode } from "jwt-decode";
+import { toast } from "sonner";
+import Iridescence from "../components/Iridescence";
 
 export function LoginPage() {
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
-    const [errors, setErrors] = useState({});
-    const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
-    const navigate = useNavigate();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
 
-    const handleLogin = async (e) => {
-        e.preventDefault();
+  const handleLogin = async (e) => {
+    e.preventDefault();
 
-        const newErrors = {};
+    if (!email || !password) {
+      toast.error("Please enter your email and password.");
+      return;
+    }
 
-        if (!email.trim()) {
-            newErrors.email = "Email is required";
-        } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-            newErrors.email = "Please enter a valid email";
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if (!emailRegex.test(email)) {
+      toast.error("Please enter a valid email address.");
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      const response = await fetch(
+        "https://localhost:7139/api/Auth/login",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            email,
+            password,
+          }),
         }
+      );
 
-        if (!password) {
-            newErrors.password = "Password is required";
-        } else if (password.length < 6) {
-            newErrors.password = "Password must be at least 6 characters";
-        }
+      const data = await response.json();
 
-        if (Object.keys(newErrors).length > 0) {
-            setErrors(newErrors);
-            return;
-        }
+      if (!response.ok) {
+        toast.error(data.message || "Login failed.");
+        return;
+      }
 
-        setErrors({});
+      const accessToken = data.accessToken;
+      const refreshToken = data.refreshToken;
 
-        try {
-            setLoading(true);
+      const decoded = jwtDecode(accessToken);
 
-            const res = await api.post("/Auth/login", {
-                email,
-                password,
-            });
+      const role =
+        decoded[
+          "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"
+        ];
 
-            const accessToken = res.data.accessToken;
-            const decoded = jwtDecode(accessToken);
+      if (role !== "Admin") {
+        toast.error(
+          "You are not authorized to access the admin panel."
+        );
+        return;
+      }
 
-            const role =
-                decoded.role ||
-                decoded[
-                    "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"
-                ];
+      localStorage.setItem("accessToken", accessToken);
+      localStorage.setItem("refreshToken", refreshToken);
 
-            if (role?.toLowerCase() !== "admin") {
-                toast.error(
-                    "You are not authorized to access the admin panel."
-                );
-                return;
-            }
+      toast.success("Login successful!");
+      navigate("/admin");
+    } catch (error) {
+      console.error(error);
+      toast.error("Something went wrong. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
-            localStorage.setItem("accessToken", accessToken);
+  return (
+    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-zinc-50 px-4 font-sans text-zinc-900">
+      {/* Iridescence background - KEEPING YOUR ORIGINAL BACKGROUND */}
+      <div className="absolute inset-0">
+        <Iridescence
+  color={[0.25, 0.55, 0.95]}
+  speed={0.35}
+  amplitude={0.32}
+  mouseReact={true}
+/>
+      </div>
 
-            localStorage.setItem(
-                "refreshToken",
-                res.data.refreshToken
-            );
+      {/* Soft blue-tinted overlay */}
+      <div className="absolute inset-0 bg-blue-50/40 backdrop-blur-[2px]" />
 
-            toast.success("Login successful");
+      {/* Login card */}
+      <div className="relative z-10 w-full max-w-md">
+        <div className="rounded-2xl border border-zinc-200/80 bg-white/95 p-8 shadow-[0_20px_60px_rgba(0,0,0,0.10)] backdrop-blur-md">
 
-            navigate("/admin");
-        } catch (error) {
-            console.error("Login failed:", error);
-            console.log(
-                "Server response:",
-                error.response?.data
-            );
+          {/* Header */}
+          <div className="mb-8">
+            <p className="mb-2 text-xs font-medium uppercase tracking-[0.18em] text-zinc-400">
+              TechNest
+            </p>
 
-            if (error.response?.status === 401) {
-                toast.error("Invalid email or password");
-            } else if (error.response?.status === 400) {
-                toast.error(
-                    "Please check your email and password"
-                );
-            } else {
-                toast.error(
-                    "Something went wrong. Please try again."
-                );
-            }
-        } finally {
-            setLoading(false);
-        }
-    };
+            <h1 className="text-2xl font-semibold tracking-tight text-zinc-900">
+              Admin Portal
+            </h1>
 
-    return (
-        <div className="relative min-h-screen w-full overflow-hidden bg-[#18181b]">
+            <p className="mt-2 text-sm text-zinc-500">
+              Sign in to access the admin dashboard.
+            </p>
+          </div>
 
-            {/* Background Video */}
-            <video
-                autoPlay
-                loop
-                muted
-                playsInline
-                className="absolute inset-0 h-full w-full object-cover"
-            >
-                <source
-                    src="/login2.mp4"
-                    type="video/mp4"
-                />
-            </video>
+          <form onSubmit={handleLogin} className="space-y-5">
 
-            {/* Login Section */}
-            <div className="relative z-10 flex min-h-screen items-center">
+            {/* Email */}
+            <div>
+              <label
+                htmlFor="email"
+                className="mb-2 block text-sm font-medium text-zinc-700"
+              >
+                Email
+              </label>
 
-                <div className="ml-[8%] w-full max-w-[430px]">
-
-                    {/* Login Card */}
-                    <div
-                        className="
-                            rounded-2xl
-                            border
-                            border-white/15
-                            bg-[#18181b]/85
-                            p-8
-                            shadow-2xl
-                            backdrop-blur-xl
-                        "
-                    >
-
-                        {/* Header */}
-                        <div className="mb-8 text-center">
-
-                            <h1
-                                className="
-                                    text-5xl
-                                    font-bold
-                                    tracking-tight
-                                    text-white
-                                "
-                            >
-                                TechNest
-                            </h1>
-
-
-                            <p className="mt-3 text-sm text-white/50">
-                                Sign in to continue to your dashboard
-                            </p>
-
-                        </div>
-
-                        {/* Form */}
-                        <form
-                            onSubmit={handleLogin}
-                            className="space-y-6"
-                        >
-
-                            {/* Email */}
-                            <div className="space-y-2">
-
-                                <label
-                                    htmlFor="email"
-                                    className="
-                                        text-sm
-                                        font-medium
-                                        text-white/75
-                                    "
-                                >
-                                    Email
-                                </label>
-
-                                <Input
-                                    id="email"
-                                    type="email"
-                                    placeholder="Enter your email"
-                                    value={email}
-                                    onChange={(e) => {
-                                        setEmail(e.target.value);
-
-                                        setErrors((prev) => ({
-                                            ...prev,
-                                            email: "",
-                                        }));
-                                    }}
-                                    disabled={loading}
-                                    className="
-                                        h-12
-                                        rounded-lg
-                                        border-white/15
-                                        bg-white/[0.07]
-                                        px-4
-                                        text-white
-                                        placeholder:text-white/30
-                                        transition
-                                        hover:border-white/25
-                                        hover:bg-white/[0.09]
-                                        focus:border-white/40
-                                        focus:bg-white/[0.10]
-                                        focus-visible:ring-1
-                                        focus-visible:ring-white/20
-                                    "
-                                />
-
-                                {errors.email && (
-                                    <p className="text-sm text-red-400">
-                                        {errors.email}
-                                    </p>
-                                )}
-
-                            </div>
-
-                            {/* Password */}
-                            <div className="space-y-2">
-
-                                <label
-                                    htmlFor="password"
-                                    className="
-                                        text-sm
-                                        font-medium
-                                        text-white/75
-                                    "
-                                >
-                                    Password
-                                </label>
-
-                                <Input
-                                    id="password"
-                                    type="password"
-                                    placeholder="Enter your password"
-                                    value={password}
-                                    onChange={(e) => {
-                                        setPassword(e.target.value);
-
-                                        setErrors((prev) => ({
-                                            ...prev,
-                                            password: "",
-                                        }));
-                                    }}
-                                    disabled={loading}
-                                    className="
-                                        h-12
-                                        rounded-lg
-                                        border-white/15
-                                        bg-white/[0.07]
-                                        px-4
-                                        text-white
-                                        placeholder:text-white/30
-                                        transition
-                                        hover:border-white/25
-                                        hover:bg-white/[0.09]
-                                        focus:border-white/40
-                                        focus:bg-white/[0.10]
-                                        focus-visible:ring-1
-                                        focus-visible:ring-white/20
-                                    "
-                                />
-
-                                {errors.password && (
-                                    <p className="text-sm text-red-400">
-                                        {errors.password}
-                                    </p>
-                                )}
-
-                            </div>
-
-                            {/* Forgot Password */}
-                            <div className="-mt-2 flex">
-
-                                <button
-                                    type="button"
-                                    className="
-                                        text-sm
-                                        text-white/45
-                                        transition
-                                        hover:text-white/80
-                                    "
-                                >
-                                    Forgot password?
-                                </button>
-
-                            </div>
-
-                            {/* Sign In */}
-                            <Button
-                                type="submit"
-                                disabled={loading}
-                                className="
-                                    h-12
-                                    w-full
-                                    rounded-lg
-                                    border
-                                    border-white/20
-                                    bg-white
-                                    text-base
-                                    font-semibold
-                                    text-black
-                                    shadow-lg
-                                    transition-all
-                                    duration-300
-                                    hover:bg-white/90
-                                    hover:shadow-xl
-                                "
-                            >
-                                {loading
-                                    ? "Signing In..."
-                                    : "Sign In"}
-                            </Button>
-
-                        </form>
-
-                        {/* Footer */}
-                        <p
-                            className="
-                                mt-6
-                                text-center
-                                text-xs
-                                text-white/30
-                            "
-                        >
-                            © 2026 TechNest. All rights reserved.
-                        </p>
-
-                    </div>
-
-                </div>
-
+              <input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="admin@example.com"
+                autoComplete="email"
+                className="h-12 w-full rounded-lg border border-zinc-300 bg-white px-4 text-sm text-zinc-900 outline-none transition-all placeholder:text-zinc-400 focus:border-zinc-800 focus:ring-2 focus:ring-zinc-800/10"
+              />
             </div>
 
+            {/* Password */}
+            <div>
+              <div className="mb-2 flex items-center justify-between">
+                <label
+                  htmlFor="password"
+                  className="text-sm font-medium text-zinc-700"
+                >
+                  Password
+                </label>
+
+                <a
+                  href="/forgot-password"
+                  className="text-xs font-medium text-zinc-500 transition-colors hover:text-zinc-900"
+                >
+                  Forgot password?
+                </a>
+              </div>
+
+              <input
+                id="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Enter your password"
+                autoComplete="current-password"
+                className="h-12 w-full rounded-lg border border-zinc-300 bg-white px-4 text-sm text-zinc-900 outline-none transition-all placeholder:text-zinc-400 focus:border-zinc-800 focus:ring-2 focus:ring-zinc-800/10"
+              />
+            </div>
+
+            {/* Sign in */}
+            <button
+              type="submit"
+              disabled={loading}
+              className="h-12 w-full rounded-lg bg-zinc-900 text-sm font-medium text-white transition-all duration-200 hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {loading ? "Signing in..." : "Sign in"}
+            </button>
+          </form>
+
+          {/* Footer */}
+          <div className="mt-7 border-t border-zinc-100 pt-5">
+            <p className="text-center text-xs text-zinc-400">
+              Protected by TechNest Security · ©{" "}
+              {new Date().getFullYear()}
+            </p>
+          </div>
         </div>
-    );
+      </div>
+    </div>
+  );
 }

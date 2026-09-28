@@ -31,6 +31,7 @@ export function UpdateProductPage() {
             try {
                 const response = await api.get(`/Product/${productId}`);
                 const product = response.data;
+
                 setName(product.name || "");
                 setDescription(product.description || "");
                 setActualPrice(product.actualPrice ?? "");
@@ -62,14 +63,11 @@ export function UpdateProductPage() {
         const validFiles = [];
 
         for (const file of files) {
-
-            // Check image type
             if (!file.type.startsWith("image/")) {
                 toast.error(`${file.name} is not an image`);
                 continue;
             }
 
-            // Check file size - 4MB
             if (file.size > 4 * 1024 * 1024) {
                 toast.error(`${file.name} is larger than 4MB`);
                 continue;
@@ -127,7 +125,6 @@ export function UpdateProductPage() {
 
             let imageUrls = existingImages;
 
-            // Upload new images only if user selected them
             if (images.length > 0) {
                 imageUrls = await Promise.all(
                     images.map((file) => uploadImage(file))
@@ -155,7 +152,6 @@ export function UpdateProductPage() {
                 productData
             );
 
-            // IMPORTANT: PUT, not POST
             await api.put(
                 `/Product/${productId}`,
                 productData
@@ -166,7 +162,6 @@ export function UpdateProductPage() {
             );
 
             navigate("/admin/products");
-
         } catch (error) {
             console.error(
                 "Failed to update product:",
@@ -199,39 +194,43 @@ export function UpdateProductPage() {
                 error.message ||
                 "Failed to update product. Please try again."
             );
-
         } finally {
             setLoading(false);
         }
     };
+
     if (fetching) {
         return (
-            <div className="min-h-screen bg-black text-white p-6 flex items-center justify-center">
-                <p className="text-zinc-500">Loading product details...</p>
+            <div className="flex min-h-screen items-center justify-center bg-zinc-50 p-6 font-sans text-zinc-900">
+                <p className="text-zinc-500">
+                    Loading product details...
+                </p>
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen bg-black text-white p-6">
+        <div className="relative min-h-screen overflow-hidden bg-zinc-50 p-6 font-sans text-zinc-900 md:p-8">
 
-            <div className="max-w-3xl mx-auto">
+            {/* Background accents */}
+            <div className="pointer-events-none absolute -left-24 -top-24 h-72 w-72 rounded-full bg-emerald-200/30 blur-3xl" />
+            <div className="pointer-events-none absolute -right-24 top-1/3 h-72 w-72 rounded-full bg-blue-200/30 blur-3xl" />
+
+            <div className="relative mx-auto max-w-3xl">
 
                 {/* Header */}
                 <div className="mb-6">
-
-                    <h1 className="text-2xl font-semibold text-white">
+                    <h1 className="text-2xl font-semibold tracking-tight text-zinc-900">
                         Edit Product
                     </h1>
 
-                    <p className="text-sm text-zinc-500 mt-1">
+                    <p className="mt-1 text-sm text-zinc-500">
                         Update product information
                     </p>
-
                 </div>
 
                 {/* Form Container */}
-                <div className="bg-zinc-950 border border-zinc-800 rounded-xl shadow-2xl p-8">
+                <div className="rounded-2xl border border-zinc-200 bg-white/80 p-6 shadow-lg shadow-zinc-200/50 backdrop-blur-xl sm:p-8">
 
                     <form
                         onSubmit={handleSubmit}
@@ -240,8 +239,7 @@ export function UpdateProductPage() {
 
                         {/* Product Name */}
                         <div>
-
-                            <label className="block text-sm font-medium text-zinc-300 mb-2">
+                            <label className="mb-2 block text-sm font-semibold text-zinc-700">
                                 Product Name
                             </label>
 
@@ -253,15 +251,13 @@ export function UpdateProductPage() {
                                 }
                                 placeholder="Enter product name"
                                 disabled={loading}
-                                className="w-full bg-zinc-900 border border-zinc-800 text-white placeholder-zinc-600 rounded-lg px-4 py-2.5 outline-none focus:border-zinc-600 focus:ring-1 focus:ring-zinc-600"
+                                className="w-full rounded-xl border border-zinc-200 bg-white px-4 py-2.5 text-zinc-900 outline-none placeholder:text-zinc-400 focus:border-zinc-400 focus:ring-2 focus:ring-zinc-200 disabled:cursor-not-allowed disabled:bg-zinc-50"
                             />
-
                         </div>
 
                         {/* Description */}
                         <div>
-
-                            <label className="block text-sm font-medium text-zinc-300 mb-2">
+                            <label className="mb-2 block text-sm font-semibold text-zinc-700">
                                 Description
                             </label>
 
@@ -273,18 +269,16 @@ export function UpdateProductPage() {
                                 }
                                 placeholder="Enter product description"
                                 disabled={loading}
-                                className="w-full bg-zinc-900 border border-zinc-800 text-white placeholder-zinc-600 rounded-lg px-4 py-2.5 outline-none resize-none focus:border-zinc-600 focus:ring-1 focus:ring-zinc-600"
+                                className="w-full resize-none rounded-xl border border-zinc-200 bg-white px-4 py-2.5 text-zinc-900 outline-none placeholder:text-zinc-400 focus:border-zinc-400 focus:ring-2 focus:ring-zinc-200 disabled:cursor-not-allowed disabled:bg-zinc-50"
                             />
-
                         </div>
 
                         {/* Prices */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
 
                             {/* Actual Price */}
                             <div>
-
-                                <label className="block text-sm font-medium text-zinc-300 mb-2">
+                                <label className="mb-2 block text-sm font-semibold text-zinc-700">
                                     Actual Price
                                 </label>
 
@@ -298,15 +292,13 @@ export function UpdateProductPage() {
                                     }
                                     placeholder="0.00"
                                     disabled={loading}
-                                    className="w-full bg-zinc-900 border border-zinc-800 text-white placeholder-zinc-600 rounded-lg px-4 py-2.5 outline-none focus:border-zinc-600 focus:ring-1 focus:ring-zinc-600"
+                                    className="w-full rounded-xl border border-zinc-200 bg-white px-4 py-2.5 text-zinc-900 outline-none placeholder:text-zinc-400 focus:border-zinc-400 focus:ring-2 focus:ring-zinc-200 disabled:cursor-not-allowed disabled:bg-zinc-50"
                                 />
-
                             </div>
 
                             {/* Label Price */}
                             <div>
-
-                                <label className="block text-sm font-medium text-zinc-300 mb-2">
+                                <label className="mb-2 block text-sm font-semibold text-zinc-700">
                                     Label Price
                                 </label>
 
@@ -320,30 +312,25 @@ export function UpdateProductPage() {
                                     }
                                     placeholder="0.00"
                                     disabled={loading}
-                                    className="w-full bg-zinc-900 border border-zinc-800 text-white placeholder-zinc-600 rounded-lg px-4 py-2.5 outline-none focus:border-zinc-600 focus:ring-1 focus:ring-zinc-600"
+                                    className="w-full rounded-xl border border-zinc-200 bg-white px-4 py-2.5 text-zinc-900 outline-none placeholder:text-zinc-400 focus:border-zinc-400 focus:ring-2 focus:ring-zinc-200 disabled:cursor-not-allowed disabled:bg-zinc-50"
                                 />
-
                             </div>
-
                         </div>
 
                         {/* Images */}
                         <div>
-
-                            <label className="block text-sm font-medium text-zinc-300 mb-2">
+                            <label className="mb-2 block text-sm font-semibold text-zinc-700">
                                 Product Images
                             </label>
 
                             {/* Existing Images */}
                             {existingImages.length > 0 && (
                                 <div className="mb-4">
-
-                                    <p className="text-xs text-zinc-500 mb-2">
+                                    <p className="mb-2 text-xs font-semibold text-zinc-500">
                                         Current Images
                                     </p>
 
-                                    <div className="grid grid-cols-4 gap-3">
-
+                                    <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
                                         {existingImages.map(
                                             (image, index) => (
                                                 <div
@@ -353,14 +340,12 @@ export function UpdateProductPage() {
                                                     <img
                                                         src={image}
                                                         alt={`Product ${index + 1}`}
-                                                        className="w-full h-20 object-cover rounded-lg border border-zinc-800"
+                                                        className="h-20 w-full rounded-xl border border-zinc-200 bg-zinc-100 object-cover"
                                                     />
                                                 </div>
                                             )
                                         )}
-
                                     </div>
-
                                 </div>
                             )}
 
@@ -371,24 +356,22 @@ export function UpdateProductPage() {
                                 accept="image/*"
                                 disabled={loading}
                                 onChange={handleImageChange}
-                                className="w-full bg-zinc-900 border border-zinc-800 text-zinc-400 rounded-lg px-4 py-2.5 file:mr-4 file:rounded-md file:border-0 file:bg-zinc-800 file:px-4 file:py-2 file:text-sm file:text-zinc-300"
+                                className="w-full rounded-xl border border-zinc-200 bg-white px-4 py-2.5 text-sm text-zinc-600 file:mr-4 file:rounded-lg file:border-0 file:bg-zinc-100 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-zinc-700 hover:file:bg-zinc-200 disabled:cursor-not-allowed disabled:bg-zinc-50"
                             />
 
-                            <p className="text-xs text-zinc-600 mt-2">
-                                Select new images only if you want to replace the current images. Maximum 4MB per image.
+                            <p className="mt-2 text-xs text-zinc-500">
+                                Select new images only if you want to replace
+                                the current images. Maximum 4MB per image.
                             </p>
 
                             {/* New Image Preview */}
                             {images.length > 0 && (
-
                                 <div className="mt-4">
-
-                                    <p className="text-xs text-zinc-500 mb-2">
+                                    <p className="mb-2 text-xs font-semibold text-zinc-500">
                                         New Images
                                     </p>
 
-                                    <div className="grid grid-cols-4 gap-3">
-
+                                    <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
                                         {images.map(
                                             (file, index) => (
                                                 <div
@@ -398,24 +381,19 @@ export function UpdateProductPage() {
                                                     <img
                                                         src={URL.createObjectURL(file)}
                                                         alt={file.name}
-                                                        className="w-full h-20 object-cover rounded-lg border border-zinc-800"
+                                                        className="h-20 w-full rounded-xl border border-zinc-200 bg-zinc-100 object-cover"
                                                     />
                                                 </div>
                                             )
                                         )}
-
                                     </div>
-
                                 </div>
-
                             )}
-
                         </div>
 
                         {/* Category */}
                         <div>
-
-                            <label className="block text-sm font-medium text-zinc-300 mb-2">
+                            <label className="mb-2 block text-sm font-semibold text-zinc-700">
                                 Category
                             </label>
 
@@ -427,15 +405,13 @@ export function UpdateProductPage() {
                                 }
                                 placeholder="e.g. Graphics Cards"
                                 disabled={loading}
-                                className="w-full bg-zinc-900 border border-zinc-800 text-white placeholder-zinc-600 rounded-lg px-4 py-2.5 outline-none focus:border-zinc-600 focus:ring-1 focus:ring-zinc-600"
+                                className="w-full rounded-xl border border-zinc-200 bg-white px-4 py-2.5 text-zinc-900 outline-none placeholder:text-zinc-400 focus:border-zinc-400 focus:ring-2 focus:ring-zinc-200 disabled:cursor-not-allowed disabled:bg-zinc-50"
                             />
-
                         </div>
 
                         {/* Stock */}
                         <div>
-
-                            <label className="block text-sm font-medium text-zinc-300 mb-2">
+                            <label className="mb-2 block text-sm font-semibold text-zinc-700">
                                 Stock Quantity
                             </label>
 
@@ -448,15 +424,13 @@ export function UpdateProductPage() {
                                 }
                                 placeholder="0"
                                 disabled={loading}
-                                className="w-full bg-zinc-900 border border-zinc-800 text-white placeholder-zinc-600 rounded-lg px-4 py-2.5 outline-none focus:border-zinc-600 focus:ring-1 focus:ring-zinc-600"
+                                className="w-full rounded-xl border border-zinc-200 bg-white px-4 py-2.5 text-zinc-900 outline-none placeholder:text-zinc-400 focus:border-zinc-400 focus:ring-2 focus:ring-zinc-200 disabled:cursor-not-allowed disabled:bg-zinc-50"
                             />
-
                         </div>
 
                         {/* Brand */}
                         <div>
-
-                            <label className="block text-sm font-medium text-zinc-300 mb-2">
+                            <label className="mb-2 block text-sm font-semibold text-zinc-700">
                                 Brand
                             </label>
 
@@ -468,16 +442,15 @@ export function UpdateProductPage() {
                                 }
                                 placeholder="e.g. ASUS"
                                 disabled={loading}
-                                className="w-full bg-zinc-900 border border-zinc-800 text-white placeholder-zinc-600 rounded-lg px-4 py-2.5 outline-none focus:border-zinc-600 focus:ring-1 focus:ring-zinc-600"
+                                className="w-full rounded-xl border border-zinc-200 bg-white px-4 py-2.5 text-zinc-900 outline-none placeholder:text-zinc-400 focus:border-zinc-400 focus:ring-2 focus:ring-zinc-200 disabled:cursor-not-allowed disabled:bg-zinc-50"
                             />
-
                         </div>
 
                         {/* Submit */}
                         <button
                             type="submit"
                             disabled={loading}
-                            className="w-full bg-white text-black py-3 rounded-lg font-semibold hover:bg-zinc-200 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="w-full rounded-xl bg-zinc-900 py-3 font-semibold text-white transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-50"
                         >
                             {loading
                                 ? "Updating product..."
@@ -485,11 +458,8 @@ export function UpdateProductPage() {
                         </button>
 
                     </form>
-
                 </div>
-
             </div>
-
         </div>
     );
 }

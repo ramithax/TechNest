@@ -19,7 +19,6 @@ export function AddProductPage() {
     const [loading, setLoading] = useState(false);
     const [fileKey, setFileKey] = useState(0);
 
-
     const handleImageChange = (e) => {
         if (!e.target.files) {
             return;
@@ -29,14 +28,11 @@ export function AddProductPage() {
         const validFiles = [];
 
         for (const file of files) {
-
-            // Check image type
             if (!file.type.startsWith("image/")) {
                 toast.error(`${file.name} is not an image`);
                 continue;
             }
 
-            // Check file size - 2MB
             if (file.size > 4 * 1024 * 1024) {
                 toast.error(`${file.name} is larger than 2MB`);
                 continue;
@@ -47,7 +43,6 @@ export function AddProductPage() {
 
         setImages(validFiles);
     };
-
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -90,7 +85,6 @@ export function AddProductPage() {
         try {
             setLoading(true);
 
-
             const imageUrls = await Promise.all(
                 images.map((file) => uploadImage(file))
             );
@@ -114,7 +108,6 @@ export function AddProductPage() {
 
             toast.success("Product added successfully");
 
-
             setName("");
             setDescription("");
             setActualPrice("");
@@ -126,9 +119,7 @@ export function AddProductPage() {
 
             setFileKey((prev) => prev + 1);
 
-
             navigate("/admin/products");
-
         } catch (error) {
             console.error("Failed to create product:", error);
 
@@ -143,45 +134,38 @@ export function AddProductPage() {
                 error.message ||
                 "Failed to add product. Please try again."
             );
-
         } finally {
             setLoading(false);
         }
     };
 
-
     return (
-        <div className="min-h-screen bg-black text-white p-6">
+        <div className="relative min-h-screen bg-zinc-50 text-zinc-900 p-6 md:p-8 overflow-hidden font-sans">
+            {/* Subtle Background Accents */}
+            <div className="pointer-events-none absolute -top-40 -left-40 h-96 w-96 rounded-full bg-emerald-500/5 blur-[120px]" />
+            <div className="pointer-events-none absolute top-1/3 -right-40 h-96 w-96 rounded-full bg-blue-500/5 blur-[140px]" />
 
-            <div className="max-w-3xl mx-auto">
-
+            <div className="relative z-10 max-w-3xl mx-auto">
                 {/* Header */}
-
-                <div className="mb-6">
-
-                    <h1 className="text-2xl font-semibold text-white">
+                <div className="mb-8">
+                    <h1 className="text-2xl font-semibold tracking-tight text-zinc-900">
                         Add Product
                     </h1>
 
                     <p className="text-sm text-zinc-500 mt-1">
                         Add a new product to your store
                     </p>
-
                 </div>
 
                 {/* Form Container */}
-
-                <div className="bg-zinc-950 border border-zinc-800 rounded-xl shadow-2xl p-8">
-
+                <div className="bg-white/80 border border-zinc-200 rounded-2xl shadow-lg shadow-zinc-200/50 backdrop-blur-xl p-6 sm:p-8">
                     <form
                         onSubmit={handleSubmit}
                         className="space-y-6"
                     >
-
-
+                        {/* Product Name */}
                         <div>
-
-                            <label className="block text-sm font-medium text-zinc-300 mb-2">
+                            <label className="block text-sm font-semibold text-zinc-700 mb-2">
                                 Product Name
                             </label>
 
@@ -193,14 +177,13 @@ export function AddProductPage() {
                                 }
                                 placeholder="Enter product name"
                                 disabled={loading}
-                                className="w-full bg-zinc-900 border border-zinc-800 text-white placeholder-zinc-600 rounded-lg px-4 py-2.5 outline-none focus:border-zinc-600 focus:ring-1 focus:ring-zinc-600"
+                                className="w-full bg-white border border-zinc-200 text-zinc-900 placeholder-zinc-400 rounded-xl px-4 py-2.5 outline-none focus:border-zinc-400 focus:ring-2 focus:ring-zinc-200 transition"
                             />
-
                         </div>
 
+                        {/* Description */}
                         <div>
-
-                            <label className="block text-sm font-medium text-zinc-300 mb-2">
+                            <label className="block text-sm font-semibold text-zinc-700 mb-2">
                                 Description
                             </label>
 
@@ -212,18 +195,15 @@ export function AddProductPage() {
                                 }
                                 placeholder="Enter product description"
                                 disabled={loading}
-                                className="w-full bg-zinc-900 border border-zinc-800 text-white placeholder-zinc-600 rounded-lg px-4 py-2.5 outline-none resize-none focus:border-zinc-600 focus:ring-1 focus:ring-zinc-600"
+                                className="w-full bg-white border border-zinc-200 text-zinc-900 placeholder-zinc-400 rounded-xl px-4 py-2.5 outline-none resize-none focus:border-zinc-400 focus:ring-2 focus:ring-zinc-200 transition"
                             />
-
                         </div>
 
+                        {/* Prices */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-
                             {/* Actual Price */}
-
                             <div>
-
-                                <label className="block text-sm font-medium text-zinc-300 mb-2">
+                                <label className="block text-sm font-semibold text-zinc-700 mb-2">
                                     Actual Price
                                 </label>
 
@@ -237,16 +217,13 @@ export function AddProductPage() {
                                     }
                                     placeholder="0.00"
                                     disabled={loading}
-                                    className="w-full bg-zinc-900 border border-zinc-800 text-white placeholder-zinc-600 rounded-lg px-4 py-2.5 outline-none focus:border-zinc-600 focus:ring-1 focus:ring-zinc-600"
+                                    className="w-full bg-white border border-zinc-200 text-zinc-900 placeholder-zinc-400 rounded-xl px-4 py-2.5 outline-none focus:border-zinc-400 focus:ring-2 focus:ring-zinc-200 transition"
                                 />
-
                             </div>
 
                             {/* Label Price */}
-
                             <div>
-
-                                <label className="block text-sm font-medium text-zinc-300 mb-2">
+                                <label className="block text-sm font-semibold text-zinc-700 mb-2">
                                     Label Price
                                 </label>
 
@@ -260,16 +237,14 @@ export function AddProductPage() {
                                     }
                                     placeholder="0.00"
                                     disabled={loading}
-                                    className="w-full bg-zinc-900 border border-zinc-800 text-white placeholder-zinc-600 rounded-lg px-4 py-2.5 outline-none focus:border-zinc-600 focus:ring-1 focus:ring-zinc-600"
+                                    className="w-full bg-white border border-zinc-200 text-zinc-900 placeholder-zinc-400 rounded-xl px-4 py-2.5 outline-none focus:border-zinc-400 focus:ring-2 focus:ring-zinc-200 transition"
                                 />
-
                             </div>
-
                         </div>
 
+                        {/* Product Images */}
                         <div>
-
-                            <label className="block text-sm font-medium text-zinc-300 mb-2">
+                            <label className="block text-sm font-semibold text-zinc-700 mb-2">
                                 Product Images
                             </label>
 
@@ -280,46 +255,35 @@ export function AddProductPage() {
                                 accept="image/*"
                                 disabled={loading}
                                 onChange={handleImageChange}
-                                className="w-full bg-zinc-900 border border-zinc-800 text-zinc-400 rounded-lg px-4 py-2.5 file:mr-4 file:rounded-md file:border-0 file:bg-zinc-800 file:px-4 file:py-2 file:text-sm file:text-zinc-300"
+                                className="w-full bg-white border border-zinc-200 text-zinc-500 rounded-xl px-4 py-2.5 file:mr-4 file:rounded-lg file:border-0 file:bg-zinc-100 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-zinc-700 hover:file:bg-zinc-200 transition"
                             />
 
-                            <p className="text-xs text-zinc-600 mt-2">
+                            <p className="text-xs text-zinc-400 mt-2">
                                 Maximum 2MB per image
                             </p>
 
-                            {/* IMAGE PREVIEW */}
-
+                            {/* Image Preview */}
                             {images.length > 0 && (
-
-                                <div className="grid grid-cols-4 gap-3 mt-4">
-
+                                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-4">
                                     {images.map((file, index) => (
-
                                         <div
                                             key={index}
                                             className="relative"
                                         >
-
                                             <img
                                                 src={URL.createObjectURL(file)}
                                                 alt={file.name}
-                                                className="w-full h-20 object-cover rounded-lg border border-zinc-800"
+                                                className="w-full h-20 object-cover rounded-xl border border-zinc-200 bg-zinc-100"
                                             />
-
                                         </div>
-
                                     ))}
-
                                 </div>
-
                             )}
-
                         </div>
 
-
+                        {/* Category */}
                         <div>
-
-                            <label className="block text-sm font-medium text-zinc-300 mb-2">
+                            <label className="block text-sm font-semibold text-zinc-700 mb-2">
                                 Category
                             </label>
 
@@ -331,15 +295,13 @@ export function AddProductPage() {
                                 }
                                 placeholder="e.g. Graphics Cards"
                                 disabled={loading}
-                                className="w-full bg-zinc-900 border border-zinc-800 text-white placeholder-zinc-600 rounded-lg px-4 py-2.5 outline-none focus:border-zinc-600 focus:ring-1 focus:ring-zinc-600"
+                                className="w-full bg-white border border-zinc-200 text-zinc-900 placeholder-zinc-400 rounded-xl px-4 py-2.5 outline-none focus:border-zinc-400 focus:ring-2 focus:ring-zinc-200 transition"
                             />
-
                         </div>
 
-
+                        {/* Stock Quantity */}
                         <div>
-
-                            <label className="block text-sm font-medium text-zinc-300 mb-2">
+                            <label className="block text-sm font-semibold text-zinc-700 mb-2">
                                 Stock Quantity
                             </label>
 
@@ -352,14 +314,13 @@ export function AddProductPage() {
                                 }
                                 placeholder="0"
                                 disabled={loading}
-                                className="w-full bg-zinc-900 border border-zinc-800 text-white placeholder-zinc-600 rounded-lg px-4 py-2.5 outline-none focus:border-zinc-600 focus:ring-1 focus:ring-zinc-600"
+                                className="w-full bg-white border border-zinc-200 text-zinc-900 placeholder-zinc-400 rounded-xl px-4 py-2.5 outline-none focus:border-zinc-400 focus:ring-2 focus:ring-zinc-200 transition"
                             />
-
                         </div>
 
+                        {/* Brand */}
                         <div>
-
-                            <label className="block text-sm font-medium text-zinc-300 mb-2">
+                            <label className="block text-sm font-semibold text-zinc-700 mb-2">
                                 Brand
                             </label>
 
@@ -371,29 +332,23 @@ export function AddProductPage() {
                                 }
                                 placeholder="e.g. ASUS"
                                 disabled={loading}
-                                className="w-full bg-zinc-900 border border-zinc-800 text-white placeholder-zinc-600 rounded-lg px-4 py-2.5 outline-none focus:border-zinc-600 focus:ring-1 focus:ring-zinc-600"
+                                className="w-full bg-white border border-zinc-200 text-zinc-900 placeholder-zinc-400 rounded-xl px-4 py-2.5 outline-none focus:border-zinc-400 focus:ring-2 focus:ring-zinc-200 transition"
                             />
-
                         </div>
 
+                        {/* Submit */}
                         <button
                             type="submit"
                             disabled={loading}
-                            className="w-full bg-white text-black py-3 rounded-lg font-semibold hover:bg-zinc-200 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="w-full bg-zinc-900 text-white py-3 rounded-xl font-semibold hover:bg-zinc-800 transition disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
                         >
-
                             {loading
                                 ? "Uploading images & adding product..."
                                 : "Add Product"}
-
                         </button>
-
                     </form>
-
                 </div>
-
             </div>
-
         </div>
     );
 }
