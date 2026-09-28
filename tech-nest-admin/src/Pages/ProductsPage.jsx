@@ -3,7 +3,6 @@ import { Link } from "react-router-dom";
 import api from "@/lib/axios";
 import AddButton from "@/components/AddButton";
 import { toast } from "sonner";
-
 import {
     AlertDialog,
     AlertDialogAction,
@@ -19,43 +18,51 @@ export function ProductPage() {
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
-
-    // Delete dialog states
+    const [page, setPage] = useState(1);
+    const [pageSize] = useState(10);
+    const [totalPages, setTotalPages] = useState(1);
+    const [totalCount, setTotalCount] = useState(0);
     const [deleteOpen, setDeleteOpen] = useState(false);
     const [selectedProduct, setSelectedProduct] = useState(null);
     const [deleting, setDeleting] = useState(false);
 
-    const fetchProducts = async () => {
+    const fetchProducts = async (pageNumber = page) => {
         try {
             setLoading(true);
             setError("");
 
             const response = await api.get("/Product", {
                 params: {
+                    page: pageNumber,
+                    pageSize,
                     includeInactive: true,
                 },
             });
 
-            setProducts(response.data);
+            const data = response.data;
+
+            setProducts(data.items || []);
+            setPage(data.page || pageNumber);
+            setTotalPages(data.totalPages || 1);
+            setTotalCount(data.totalCount || 0);
         } catch (error) {
             console.error("Failed to fetch products:", error);
             setError("Failed to load products.");
+            setProducts([]);
         } finally {
             setLoading(false);
         }
     };
 
     useEffect(() => {
-        fetchProducts();
-    }, []);
+        fetchProducts(page);
+    }, [page]);
 
-    // Open delete confirmation
     const handleDeleteClick = (product) => {
         setSelectedProduct(product);
         setDeleteOpen(true);
     };
 
-    // Delete product
     const handleDelete = async () => {
         if (!selectedProduct) return;
 
@@ -64,33 +71,28 @@ export function ProductPage() {
 
             await api.delete(`/Product/${selectedProduct.id}`);
 
-            setProducts((currentProducts) =>
-                currentProducts.filter(
-                    (product) => product.id !== selectedProduct.id
-                )
-            );
-
             toast.success("Product deleted successfully");
 
             setDeleteOpen(false);
             setSelectedProduct(null);
 
+            if (products.length === 1 && page > 1) {
+                setPage((currentPage) => currentPage - 1);
+            } else {
+                fetchProducts(page);
+            }
         } catch (error) {
             console.error("Failed to delete product:", error);
-
             toast.error("Failed to delete product.");
-
         } finally {
             setDeleting(false);
         }
     };
 
     return (
-        <div className="min-h-screen bg-black text-white p-6">
-
+        <div className="min-h-screen bg-black text-white p-4 sm:p-6">
             {/* Header */}
-            <div className="flex items-center justify-between mb-6">
-
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
                 <div>
                     <h1 className="text-2xl font-semibold text-white">
                         Products
@@ -101,10 +103,12 @@ export function ProductPage() {
                     </p>
                 </div>
 
-                <Link to="/admin/add-product">
+                <Link
+                    to="/admin/add-product"
+                    className="self-start sm:self-auto"
+                >
                     <AddButton />
                 </Link>
-
             </div>
 
             {/* Error */}
@@ -116,7 +120,6 @@ export function ProductPage() {
 
             {/* Table Container */}
             <div className="bg-zinc-950 border border-zinc-800/80 rounded-xl shadow-2xl overflow-hidden">
-
                 {loading ? (
                     <div className="text-center py-16 text-zinc-500">
                         Loading products...
@@ -126,173 +129,212 @@ export function ProductPage() {
                         No products found
                     </div>
                 ) : (
-                    <div className="overflow-x-auto">
+                    <>
+                        {/* Responsive Table */}
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-sm text-left">
+                                <thead className="bg-zinc-900/80 text-zinc-500 uppercase text-xs border-b border-zinc-800">
+                                    <tr>
+                                        <th className="px-6 py-4">
+                                            Product
+                                        </th>
 
-                        <table className="w-full text-sm text-left">
+                                        <th className="px-6 py-4">
+                                            Price
+                                        </th>
 
-                            {/* Table Head */}
-                            <thead className="bg-zinc-900/80 text-zinc-500 uppercase text-xs border-b border-zinc-800">
+                                        <th className="px-6 py-4">
+                                            Label Price
+                                        </th>
 
-                                <tr>
+                                        <th className="px-6 py-4">
+                                            Stock
+                                        </th>
 
-                                    <th className="px-6 py-4">
-                                        Product
-                                    </th>
+                                        <th className="px-6 py-4">
+                                            Category
+                                        </th>
 
-                                    <th className="px-6 py-4">
-                                        Price
-                                    </th>
+                                        <th className="px-6 py-4">
+                                            Brand
+                                        </th>
 
-                                    <th className="px-6 py-4">
-                                        Label Price
-                                    </th>
+                                        <th className="px-6 py-4">
+                                            Status
+                                        </th>
 
-                                    <th className="px-6 py-4">
-                                        Stock
-                                    </th>
-
-                                    <th className="px-6 py-4">
-                                        Category
-                                    </th>
-
-                                    <th className="px-6 py-4">
-                                        Brand
-                                    </th>
-
-                                    <th className="px-6 py-4">
-                                        Status
-                                    </th>
-
-                                    <th className="px-6 py-4 text-right">
-                                        Actions
-                                    </th>
-
-                                </tr>
-
-                            </thead>
-
-                            {/* Table Body */}
-                            <tbody>
-
-                                {products.map((product) => (
-
-                                    <tr
-                                        key={product.id}
-                                        className="border-b border-zinc-900 hover:bg-zinc-900/60 transition-colors"
-                                    >
-
-                                        {/* Product */}
-                                        <td className="px-6 py-4">
-
-                                            <div className="flex items-center gap-3">
-
-                                                <img
-                                                    src={
-                                                        product.images?.[0] ||
-                                                        "/placeholder.png"
-                                                    }
-                                                    alt={product.name}
-                                                    className="w-12 h-12 rounded-lg object-cover bg-zinc-900 border border-zinc-800"
-                                                />
-
-                                                <div>
-
-                                                    <p className="font-medium text-zinc-100">
-                                                        {product.name}
-                                                    </p>
-
-                                                    <p className="text-xs text-zinc-600 mt-0.5">
-                                                        ID: {product.id}
-                                                    </p>
-
-                                                </div>
-
-                                            </div>
-
-                                        </td>
-
-                                        {/* Actual Price */}
-                                        <td className="px-6 py-4 font-medium text-zinc-200">
-                                            Rs. {product.actualPrice}
-                                        </td>
-
-                                        {/* Label Price */}
-                                        <td className="px-6 py-4 text-zinc-500">
-                                            Rs. {product.labelPrice}
-                                        </td>
-
-                                        {/* Stock */}
-                                        <td className="px-6 py-4 text-zinc-300">
-                                            {product.stockQuantity}
-                                        </td>
-
-                                        {/* Category */}
-                                        <td className="px-6 py-4 text-zinc-400">
-                                            {product.category}
-                                        </td>
-
-                                        {/* Brand */}
-                                        <td className="px-6 py-4 text-zinc-400">
-                                            {product.brand}
-                                        </td>
-
-                                        {/* Status */}
-                                        <td className="px-6 py-4">
-
-                                            <span
-                                                className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium border ${product.isActive
-                                                    ? "bg-green-950/40 text-green-400 border-green-900/50"
-                                                    : "bg-red-950/40 text-red-400 border-red-900/50"
-                                                    }`}
-                                            >
-                                                {product.isActive
-                                                    ? "Active"
-                                                    : "Inactive"}
-                                            </span>
-
-                                        </td>
-
-                                        {/* Actions */}
-                                        <td className="px-6 py-4 text-right">
-
-                                            <div className="flex justify-end gap-2">
-
-                                                {/* Edit */}
-                                                <Link
-                                                    to={`/admin/edit-product/${product.id}`}
-                                                    className="px-3 py-1.5 text-xs font-medium rounded-md bg-zinc-900 border border-zinc-800 text-zinc-300 hover:bg-zinc-800 hover:text-white transition"
-                                                >
-                                                    Edit
-                                                </Link>
-
-                                                {/* Delete */}
-                                                <button
-                                                    onClick={() =>
-                                                        handleDeleteClick(product)
-                                                    }
-                                                    className="px-3 py-1.5 text-xs font-medium rounded-md bg-red-950/30 border border-red-900/40 text-red-400 hover:bg-red-950/60 hover:text-red-300 transition"
-                                                >
-                                                    Delete
-                                                </button>
-
-                                            </div>
-
-                                        </td>
-
+                                        <th className="px-6 py-4 text-right">
+                                            Actions
+                                        </th>
                                     </tr>
+                                </thead>
 
-                                ))}
+                                <tbody>
+                                    {products.map((product) => (
+                                        <tr
+                                            key={product.id}
+                                            className="border-b border-zinc-900 hover:bg-zinc-900/60 transition-colors"
+                                        >
+                                            {/* Product */}
+                                            <td className="px-6 py-4">
+                                                <div className="flex items-center gap-3">
+                                                    <img
+                                                        src={
+                                                            product.images?.[0] ||
+                                                            "/placeholder.png"
+                                                        }
+                                                        alt={product.name}
+                                                        className="w-12 h-12 rounded-lg object-cover bg-zinc-900 border border-zinc-800"
+                                                    />
 
-                            </tbody>
+                                                    <div>
+                                                        <p className="font-medium text-zinc-100">
+                                                            {product.name}
+                                                        </p>
 
-                        </table>
+                                                        <p className="text-xs text-zinc-600 mt-0.5">
+                                                            ID: {product.id}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </td>
 
-                    </div>
+                                            {/* Actual Price */}
+                                            <td className="px-6 py-4 font-medium text-zinc-200">
+                                                Rs. {product.actualPrice}
+                                            </td>
+
+                                            {/* Label Price */}
+                                            <td className="px-6 py-4 text-zinc-500">
+                                                Rs. {product.labelPrice}
+                                            </td>
+
+                                            {/* Stock */}
+                                            <td className="px-6 py-4 text-zinc-300">
+                                                {product.stockQuantity}
+                                            </td>
+
+                                            {/* Category */}
+                                            <td className="px-6 py-4 text-zinc-400">
+                                                {product.category}
+                                            </td>
+
+                                            {/* Brand */}
+                                            <td className="px-6 py-4 text-zinc-400">
+                                                {product.brand}
+                                            </td>
+
+                                            {/* Status */}
+                                            <td className="px-6 py-4">
+                                                <span
+                                                    className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium border ${
+                                                        product.isActive
+                                                            ? "bg-green-950/40 text-green-400 border-green-900/50"
+                                                            : "bg-red-950/40 text-red-400 border-red-900/50"
+                                                    }`}
+                                                >
+                                                    {product.isActive
+                                                        ? "Active"
+                                                        : "Inactive"}
+                                                </span>
+                                            </td>
+
+                                            {/* Actions */}
+                                            <td className="px-6 py-4 text-right">
+                                                <div className="flex justify-end gap-2">
+                                                    {/* Edit */}
+                                                    <Link
+                                                        to={`/admin/edit-product/${product.id}`}
+                                                        className="px-3 py-1.5 text-xs font-medium rounded-md bg-zinc-900 border border-zinc-800 text-zinc-300 hover:bg-zinc-800 hover:text-white transition"
+                                                    >
+                                                        Edit
+                                                    </Link>
+
+                                                    {/* Delete */}
+                                                    <button
+                                                        onClick={() =>
+                                                            handleDeleteClick(
+                                                                product
+                                                            )
+                                                        }
+                                                        className="px-3 py-1.5 text-xs font-medium rounded-md bg-red-950/30 border border-red-900/40 text-red-400 hover:bg-red-950/60 hover:text-red-300 transition"
+                                                    >
+                                                        Delete
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        {/* Pagination */}
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 px-6 py-4 border-t border-zinc-800">
+                            {/* Count */}
+                            <div className="text-sm text-zinc-500">
+                                Showing{" "}
+                                <span className="text-zinc-300">
+                                    {products.length}
+                                </span>{" "}
+                                of{" "}
+                                <span className="text-zinc-300">
+                                    {totalCount}
+                                </span>{" "}
+                                products
+                            </div>
+
+                            {/* Pagination Controls */}
+                            <div className="flex items-center gap-2">
+                                {/* Previous */}
+                                <button
+                                    onClick={() =>
+                                        setPage((currentPage) =>
+                                            Math.max(1, currentPage - 1)
+                                        )
+                                    }
+                                    disabled={page === 1 || loading}
+                                    className="px-3 py-1.5 text-sm rounded-md border border-zinc-800 bg-zinc-900 text-zinc-300 hover:bg-zinc-800 hover:text-white disabled:opacity-40 disabled:cursor-not-allowed transition"
+                                >
+                                    Previous
+                                </button>
+
+                                {/* Page Number */}
+                                <div className="px-3 py-1.5 text-sm text-zinc-400 whitespace-nowrap">
+                                    Page{" "}
+                                    <span className="text-white font-medium">
+                                        {page}
+                                    </span>{" "}
+                                    of{" "}
+                                    <span className="text-white font-medium">
+                                        {totalPages}
+                                    </span>
+                                </div>
+
+                                {/* Next */}
+                                <button
+                                    onClick={() =>
+                                        setPage((currentPage) =>
+                                            Math.min(
+                                                totalPages,
+                                                currentPage + 1
+                                            )
+                                        )
+                                    }
+                                    disabled={
+                                        page >= totalPages || loading
+                                    }
+                                    className="px-3 py-1.5 text-sm rounded-md border border-zinc-800 bg-zinc-900 text-zinc-300 hover:bg-zinc-800 hover:text-white disabled:opacity-40 disabled:cursor-not-allowed transition"
+                                >
+                                    Next
+                                </button>
+                            </div>
+                        </div>
+                    </>
                 )}
-
             </div>
 
-            {/* DELETE CONFIRMATION DIALOG */}
+            {/* Delete Confirmation Dialog */}
             <AlertDialog
                 open={deleteOpen}
                 onOpenChange={(open) => {
@@ -305,38 +347,28 @@ export function ProductPage() {
                     }
                 }}
             >
-
                 <AlertDialogContent className="bg-zinc-950 border border-zinc-800 text-white">
-
                     <AlertDialogHeader>
-
                         <AlertDialogTitle className="text-lg font-semibold text-white">
                             Delete Product?
                         </AlertDialogTitle>
 
                         <AlertDialogDescription className="text-zinc-400">
-
                             Are you sure you want to delete{" "}
-
                             <span className="font-medium text-white">
                                 {selectedProduct?.name}
                             </span>
-
                             ?
-
                             <br />
 
                             <span className="text-red-400">
                                 This action cannot be undone.
                             </span>
-
                         </AlertDialogDescription>
-
                     </AlertDialogHeader>
 
                     <AlertDialogFooter>
-
-                        {/* No */}
+                        {/* Cancel */}
                         <AlertDialogCancel
                             disabled={deleting}
                             className="bg-zinc-900 border-zinc-700 text-zinc-300 hover:bg-zinc-800 hover:text-white"
@@ -344,7 +376,7 @@ export function ProductPage() {
                             No, Cancel
                         </AlertDialogCancel>
 
-                        {/* Yes */}
+                        {/* Delete */}
                         <AlertDialogAction
                             disabled={deleting}
                             onClick={(e) => {
@@ -357,13 +389,9 @@ export function ProductPage() {
                                 ? "Deleting..."
                                 : "Yes, Delete"}
                         </AlertDialogAction>
-
                     </AlertDialogFooter>
-
                 </AlertDialogContent>
-
             </AlertDialog>
-
         </div>
     );
 }

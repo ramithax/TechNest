@@ -9,6 +9,20 @@ export function CustomerPage() {
     const [selectedUser, setSelectedUser] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
 
+    const [page, setPage] = useState(1);
+    const [pageSize] = useState(10);
+
+    const totalCount = users.length;
+    const totalPages = Math.max(
+        1,
+        Math.ceil(totalCount / pageSize)
+    );
+
+    const paginatedUsers = users.slice(
+        (page - 1) * pageSize,
+        page * pageSize
+    );
+
     // Fetch all users
     const getUsers = async () => {
         try {
@@ -21,7 +35,8 @@ export function CustomerPage() {
             console.error("Failed to fetch users:", error);
 
             toast.error(
-                error.response?.data?.message || "Failed to fetch users"
+                error.response?.data?.message ||
+                "Failed to fetch users"
             );
         } finally {
             setIsLoading(false);
@@ -32,6 +47,13 @@ export function CustomerPage() {
     useEffect(() => {
         getUsers();
     }, []);
+
+    // Keep page valid when users are removed/changed
+    useEffect(() => {
+        if (page > totalPages) {
+            setPage(totalPages);
+        }
+    }, [page, totalPages]);
 
     // Open modal
     const handleView = (user) => {
@@ -103,129 +125,199 @@ export function CustomerPage() {
                         No users found
                     </div>
                 ) : (
-                    <div className="overflow-x-auto">
+                    <>
+                        <div className="overflow-x-auto">
 
-                        <table className="w-full text-sm text-left min-w-[800px]">
+                            <table className="w-full text-sm text-left min-w-[800px]">
 
-                            {/* Table Header */}
-                            <thead className="bg-zinc-900/80 text-zinc-500 uppercase text-xs border-b border-zinc-800">
+                                {/* Table Header */}
+                                <thead className="bg-zinc-900/80 text-zinc-500 uppercase text-xs border-b border-zinc-800">
 
-                                <tr>
-                                    <th className="px-6 py-4">
-                                        Name
-                                    </th>
+                                    <tr>
+                                        <th className="px-6 py-4">
+                                            Name
+                                        </th>
 
-                                    <th className="px-6 py-4">
-                                        Email
-                                    </th>
+                                        <th className="px-6 py-4">
+                                            Email
+                                        </th>
 
-                                    <th className="px-6 py-4">
-                                        Role
-                                    </th>
+                                        <th className="px-6 py-4">
+                                            Role
+                                        </th>
 
-                                    <th className="px-6 py-4">
-                                        Status
-                                    </th>
+                                        <th className="px-6 py-4">
+                                            Status
+                                        </th>
 
-                                    <th className="px-6 py-4">
-                                        Date
-                                    </th>
+                                        <th className="px-6 py-4">
+                                            Date
+                                        </th>
 
-                                    <th className="px-6 py-4 text-right">
-                                        Action
-                                    </th>
-                                </tr>
-
-                            </thead>
-
-                            {/* Table Body */}
-                            <tbody>
-
-                                {users.map((user) => (
-
-                                    <tr
-                                        key={user.id}
-                                        className="border-b border-zinc-900 hover:bg-zinc-900/60 transition-colors"
-                                    >
-
-                                        {/* Name */}
-                                        <td className="px-6 py-4">
-
-                                            <p className="font-medium text-zinc-100">
-                                                {user.name}
-                                            </p>
-
-                                        </td>
-
-                                        {/* Email */}
-                                        <td className="px-6 py-4 break-all text-zinc-400">
-                                            {user.email}
-                                        </td>
-
-                                        {/* Role */}
-                                        <td className="px-6 py-4">
-
-                                            <span
-                                                className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium border ${user.role?.toUpperCase() === "ADMIN"
-                                                    ? "bg-green-950/40 text-green-400 border-green-900/50"
-                                                    : "bg-zinc-900 text-zinc-400 border-zinc-800"
-                                                    }`}
-                                            >
-                                                {user.role}
-                                            </span>
-
-                                        </td>
-
-                                        {/* Status */}
-                                        <td className="px-6 py-4">
-
-                                            <span
-                                                className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium border ${user.isBlocked
-                                                    ? "bg-red-950/40 text-red-400 border-red-900/50"
-                                                    : "bg-green-950/40 text-green-400 border-green-900/50"
-                                                    }`}
-                                            >
-                                                {user.isBlocked
-                                                    ? "Blocked"
-                                                    : "Active"}
-                                            </span>
-
-                                        </td>
-
-                                        {/* Date */}
-                                        <td className="px-6 py-4 text-zinc-500">
-
-                                            {user.createdAt
-                                                ? new Date(
-                                                    user.createdAt
-                                                ).toLocaleDateString()
-                                                : "-"}
-
-                                        </td>
-
-                                        {/* Action */}
-                                        <td className="px-6 py-4 text-right">
-
-                                            <button
-                                                onClick={() =>
-                                                    handleView(user)
-                                                }
-                                                className="inline-flex items-center justify-center w-8 h-8 rounded-md bg-zinc-900 border border-zinc-800 text-zinc-400 hover:bg-zinc-800 hover:text-white transition"
-                                            >
-                                                <Eye size={17} />
-                                            </button>
-
-                                        </td>
-
+                                        <th className="px-6 py-4 text-right">
+                                            Action
+                                        </th>
                                     </tr>
 
-                                ))}
+                                </thead>
 
-                            </tbody>
+                                {/* Table Body */}
+                                <tbody>
 
-                        </table>
+                                    {paginatedUsers.map((user) => (
 
-                    </div>
+                                        <tr
+                                            key={user.id}
+                                            className="border-b border-zinc-900 hover:bg-zinc-900/60 transition-colors"
+                                        >
+
+                                            {/* Name */}
+                                            <td className="px-6 py-4">
+                                                <p className="font-medium text-zinc-100">
+                                                    {user.name}
+                                                </p>
+                                            </td>
+
+                                            {/* Email */}
+                                            <td className="px-6 py-4 break-all text-zinc-400">
+                                                {user.email}
+                                            </td>
+
+                                            {/* Role */}
+                                            <td className="px-6 py-4">
+
+                                                <span
+                                                    className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium border ${
+                                                        user.role?.toUpperCase() === "ADMIN"
+                                                            ? "bg-green-950/40 text-green-400 border-green-900/50"
+                                                            : "bg-zinc-900 text-zinc-400 border-zinc-800"
+                                                    }`}
+                                                >
+                                                    {user.role}
+                                                </span>
+
+                                            </td>
+
+                                            {/* Status */}
+                                            <td className="px-6 py-4">
+
+                                                <span
+                                                    className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium border ${
+                                                        user.isBlocked
+                                                            ? "bg-red-950/40 text-red-400 border-red-900/50"
+                                                            : "bg-green-950/40 text-green-400 border-green-900/50"
+                                                    }`}
+                                                >
+                                                    {user.isBlocked
+                                                        ? "Blocked"
+                                                        : "Active"}
+                                                </span>
+
+                                            </td>
+
+                                            {/* Date */}
+                                            <td className="px-6 py-4 text-zinc-500">
+
+                                                {user.createdAt
+                                                    ? new Date(
+                                                        user.createdAt
+                                                    ).toLocaleDateString()
+                                                    : "-"}
+
+                                            </td>
+
+                                            {/* Action */}
+                                            <td className="px-6 py-4 text-right">
+
+                                                <button
+                                                    onClick={() =>
+                                                        handleView(user)
+                                                    }
+                                                    className="inline-flex items-center justify-center w-8 h-8 rounded-md bg-zinc-900 border border-zinc-800 text-zinc-400 hover:bg-zinc-800 hover:text-white transition"
+                                                >
+                                                    <Eye size={17} />
+                                                </button>
+
+                                            </td>
+
+                                        </tr>
+
+                                    ))}
+
+                                </tbody>
+
+                            </table>
+
+                        </div>
+
+                        {/* Pagination */}
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 px-6 py-4 border-t border-zinc-800">
+
+                            <div className="text-sm text-zinc-500">
+                                Showing{" "}
+                                <span className="text-zinc-300">
+                                    {paginatedUsers.length}
+                                </span>{" "}
+                                of{" "}
+                                <span className="text-zinc-300">
+                                    {totalCount}
+                                </span>{" "}
+                                users
+                            </div>
+
+                            <div className="flex items-center gap-2">
+
+                                <button
+                                    onClick={() =>
+                                        setPage((currentPage) =>
+                                            Math.max(
+                                                1,
+                                                currentPage - 1
+                                            )
+                                        )
+                                    }
+                                    disabled={
+                                        page === 1 ||
+                                        isLoading
+                                    }
+                                    className="px-3 py-1.5 text-sm rounded-md border border-zinc-800 bg-zinc-900 text-zinc-300 hover:bg-zinc-800 hover:text-white disabled:opacity-40 disabled:cursor-not-allowed transition"
+                                >
+                                    Previous
+                                </button>
+
+                                <div className="px-3 py-1.5 text-sm text-zinc-400 whitespace-nowrap">
+                                    Page{" "}
+                                    <span className="text-white font-medium">
+                                        {page}
+                                    </span>{" "}
+                                    of{" "}
+                                    <span className="text-white font-medium">
+                                        {totalPages}
+                                    </span>
+                                </div>
+
+                                <button
+                                    onClick={() =>
+                                        setPage((currentPage) =>
+                                            Math.min(
+                                                totalPages,
+                                                currentPage + 1
+                                            )
+                                        )
+                                    }
+                                    disabled={
+                                        page >= totalPages ||
+                                        isLoading
+                                    }
+                                    className="px-3 py-1.5 text-sm rounded-md border border-zinc-800 bg-zinc-900 text-zinc-300 hover:bg-zinc-800 hover:text-white disabled:opacity-40 disabled:cursor-not-allowed transition"
+                                >
+                                    Next
+                                </button>
+
+                            </div>
+
+                        </div>
+                    </>
                 )}
 
             </div>
@@ -336,10 +428,11 @@ export function CustomerPage() {
                                                 : null
                                         )
                                     }
-                                    className={`px-3 py-1.5 rounded-full text-xs font-medium border transition ${selectedUser.isBlocked
-                                        ? "bg-red-950/40 text-red-400 border-red-900/50 hover:bg-red-950/70"
-                                        : "bg-green-950/40 text-green-400 border-green-900/50 hover:bg-green-950/70"
-                                        }`}
+                                    className={`px-3 py-1.5 rounded-full text-xs font-medium border transition ${
+                                        selectedUser.isBlocked
+                                            ? "bg-red-950/40 text-red-400 border-red-900/50 hover:bg-red-950/70"
+                                            : "bg-green-950/40 text-green-400 border-green-900/50 hover:bg-green-950/70"
+                                    }`}
                                 >
                                     {selectedUser.isBlocked
                                         ? "Blocked"

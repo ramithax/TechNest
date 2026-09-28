@@ -9,34 +9,37 @@ import { RepairPage } from "./Pages/RepairsPage";
 import { AddProductPage } from "./Pages/AddProductPage";
 import { Toaster } from "@/components/ui/sonner";
 import { UpdateProductPage } from "./Pages/UpdateProductPage";
+import { ThemeProvider } from "./context/ThemeContext";
 
 function App() {
   return (
-    <BrowserRouter>
-      <Toaster />
-      <Routes>
+    <ThemeProvider>
+      <BrowserRouter>
+        <Toaster />
+        <Routes>
 
-        {/* Login */}
-        <Route path="/" element={<LoginPage />} />
+          {/* Login */}
+          <Route path="/" element={<LoginPage />} />
 
-        {/* Admin */}
-        <Route path="/admin" element={<AdminLayout />}>
+          {/* Admin */}
+          <Route path="/admin" element={<AdminLayout />}>
 
-          {/* /admin */}
-          <Route index element={<AdminDashboard />} />
+            {/* /admin */}
+            <Route index element={<AdminDashboard />} />
 
-          {/* Add these when the pages are created */}
-          <Route path="products" element={<ProductPage />} />
-          <Route path="orders" element={<OrdersPage />} />
-          <Route path="customers" element={<CustomerPage />} />
-          <Route path="repairs" element={<RepairPage />} />
-          <Route path="add-product" element={<AddProductPage />} />
-          <Route path="edit-product/:productId" element={<UpdateProductPage />} />
+            {/* Admin Pages */}
+            <Route path="products" element={<ProductPage />} />
+            <Route path="orders" element={<OrdersPage />} />
+            <Route path="customers" element={<CustomerPage />} />
+            <Route path="repairs" element={<RepairPage />} />
+            <Route path="add-product" element={<AddProductPage />} />
+            <Route path="edit-product/:productId" element={<UpdateProductPage />} />
 
-        </Route>
+          </Route>
 
-      </Routes>
-    </BrowserRouter>
+        </Routes>
+      </BrowserRouter>
+    </ThemeProvider>
   );
 }
 

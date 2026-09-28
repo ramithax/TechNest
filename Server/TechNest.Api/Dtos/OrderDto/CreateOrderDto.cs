@@ -20,7 +20,7 @@ namespace TechNest.Api.Dtos.OrderDto
         [Required]
         public string ContactNumber { get; set; } = string.Empty;
 
-        public string OrderType { get; set; } = "CustomPC";
+        public string OrderType { get; set; } = "Product";
 
         [Required]
         [MinLength(1, ErrorMessage = "An order must contain at least one item.")]

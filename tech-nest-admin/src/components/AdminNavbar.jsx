@@ -50,11 +50,11 @@ export default function AdminNavbar() {
     };
 
     return (
-        <header className="fixed left-0 right-0 top-0 z-50 h-[64px] border-b border-zinc-800/80 bg-[#09090b]/95 backdrop-blur-xl">
+        <header className="fixed left-0 right-0 top-0 z-50 h-[64px] border-b border-zinc-200 bg-white/90 text-zinc-900 dark:border-zinc-800/80 dark:bg-[#09090b]/95 dark:text-white backdrop-blur-xl transition-colors duration-300">
             <div className="flex h-full items-center">
 
                 {/* Logo Section */}
-                <div className="flex h-full w-[300px] shrink-0 items-center border-r border-zinc-800/80 px-5">
+                <div className="flex h-full w-[300px] shrink-0 items-center border-r border-zinc-200 dark:border-zinc-800/80 px-5 transition-colors duration-300">
                     <div className="flex items-center gap-3">
 
                         <div className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-lg">
@@ -66,11 +66,11 @@ export default function AdminNavbar() {
                         </div>
 
                         <div className="flex flex-col">
-                            <span className="text-[15px] font-semibold tracking-wide text-zinc-100">
+                            <span className="text-[15px] font-semibold tracking-wide text-zinc-800 dark:text-zinc-100 transition-colors duration-300">
                                 TechNest
                             </span>
 
-                            <span className="text-[10px] font-medium uppercase tracking-wider text-zinc-500">
+                            <span className="text-[10px] font-medium uppercase tracking-wider text-zinc-400 dark:text-zinc-500 transition-colors duration-300">
                                 Admin
                             </span>
                         </div>
@@ -81,7 +81,7 @@ export default function AdminNavbar() {
                 {/* Page Title */}
                 <div className="flex flex-1 items-center px-6">
                     <div>
-                        <h1 className="text-lg font-semibold tracking-tight text-zinc-100">
+                        <h1 className="text-lg font-semibold tracking-tight text-zinc-800 dark:text-zinc-100 transition-colors duration-300">
                             Admin Panel
                         </h1>
 
@@ -97,7 +97,7 @@ export default function AdminNavbar() {
                     {/* Notifications */}
                     <button
                         type="button"
-                        className="relative grid h-9 w-9 place-items-center rounded-lg border border-zinc-800 bg-zinc-900/80 text-zinc-400 transition hover:border-zinc-700 hover:bg-zinc-800 hover:text-zinc-100"
+                        className="relative grid h-9 w-9 place-items-center rounded-lg border border-zinc-200 bg-zinc-100 text-zinc-600 dark:border-zinc-800 dark:bg-zinc-900/80 dark:text-zinc-400 transition hover:bg-zinc-200 dark:hover:border-zinc-700 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
                         title="Notifications"
                     >
                         <Bell className="h-4 w-4" />
@@ -108,16 +108,16 @@ export default function AdminNavbar() {
                     {/* Profile */}
                     <button
                         type="button"
-                        className="flex items-center gap-2 rounded-lg border border-zinc-800 bg-zinc-900/80 px-2 py-1.5 transition hover:border-zinc-700 hover:bg-zinc-800"
+                        className="flex items-center gap-2 rounded-lg border border-zinc-200 bg-zinc-100 dark:border-zinc-800 dark:bg-zinc-900/80 px-2 py-1.5 transition hover:bg-zinc-200 dark:hover:border-zinc-700 dark:hover:bg-zinc-800"
                     >
                         {/* First Letter */}
-                        <div className="grid h-7 w-7 place-items-center rounded-md bg-zinc-700 text-xs font-semibold text-zinc-200">
+                        <div className="grid h-7 w-7 place-items-center rounded-md bg-zinc-200 text-xs font-semibold text-zinc-800 dark:bg-zinc-700 dark:text-zinc-200">
                             {firstLetter}
                         </div>
 
                         {/* User Information */}
                         <div className="hidden text-left sm:block">
-                            <p className="text-xs font-medium text-zinc-200">
+                            <p className="text-xs font-medium text-zinc-800 dark:text-zinc-200">
                                 {userName}
                             </p>
 
@@ -133,7 +133,7 @@ export default function AdminNavbar() {
                     <button
                         type="button"
                         onClick={handleLogout}
-                        className="grid h-9 w-9 place-items-center rounded-lg border border-zinc-800 bg-zinc-900/80 text-zinc-400 transition hover:border-red-900/50 hover:bg-red-950/30 hover:text-red-400"
+                        className="grid h-9 w-9 place-items-center rounded-lg border border-zinc-200 bg-zinc-100 text-zinc-600 dark:border-zinc-800 dark:bg-zinc-900/80 dark:text-zinc-400 transition hover:border-red-300 hover:bg-red-50 hover:text-red-600 dark:hover:border-red-900/50 dark:hover:bg-red-950/30 dark:hover:text-red-400"
                         title="Logout"
                     >
                         <LogOut className="h-4 w-4" />

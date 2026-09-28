@@ -9,7 +9,12 @@ namespace TechNest.Api.Services
 {
     public class ProductService(AppDbContext context) : IProductService
     {
-        public async Task<List<ProductResponseDto>> GetAllProducts(bool includeInactive = false)
+        public async Task<PagedProductResponseDto> GetAllProducts(
+            int page,
+            int pageSize,
+            bool includeInactive = false,
+            string? search = null,
+            string? category = null)
         {
             var query = context.Products.AsQueryable();
 
@@ -18,7 +23,35 @@ namespace TechNest.Api.Services
                 query = query.Where(p => p.IsActive);
             }
 
-            return await query
+            // Search filter
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                search = search.Trim();
+
+                query = query.Where(p =>
+                    p.Name.Contains(search) ||
+                    p.Description.Contains(search) ||
+                    p.Brand.Contains(search));
+            }
+
+            // Category filter
+            if (!string.IsNullOrWhiteSpace(category))
+            {
+                category = category.Trim();
+
+                query = query.Where(p => p.Category == category);
+            }
+
+            var totalCount = await query.CountAsync();
+
+            var totalPages = (int)Math.Ceiling(
+                totalCount / (double)pageSize
+            );
+
+            var products = await query
+                .OrderByDescending(p => p.CreatedAt)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
                 .Select(p => new ProductResponseDto
                 {
                     Id = p.Id,
@@ -35,13 +68,23 @@ namespace TechNest.Api.Services
                     UpdatedAt = p.UpdatedAt
                 })
                 .ToListAsync();
+
+            return new PagedProductResponseDto
+            {
+                Items = products,
+                Page = page,
+                PageSize = pageSize,
+                TotalCount = totalCount,
+                TotalPages = totalPages,
+                HasNextPage = page < totalPages
+            };
         }
 
         public async Task<ProductResponseDto?> GetProductById(int id)
         {
-            var result = await context.Products.Where(
-                c => c.Id == id).
-                Select(p => new ProductResponseDto
+            var result = await context.Products
+                .Where(c => c.Id == id)
+                .Select(p => new ProductResponseDto
                 {
                     Id = p.Id,
                     Name = p.Name,
@@ -57,6 +100,7 @@ namespace TechNest.Api.Services
                     UpdatedAt = p.UpdatedAt
                 })
                 .FirstOrDefaultAsync();
+
             return result;
         }
 
@@ -75,8 +119,8 @@ namespace TechNest.Api.Services
                 IsActive = true,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
-
             };
+
             context.Products.Add(newproduct);
             await context.SaveChangesAsync();
 
@@ -101,7 +145,8 @@ namespace TechNest.Api.Services
         {
             var exist = await context.Products.FindAsync(id);
 
-            if (exist is null) return false;
+            if (exist is null)
+                return false;
 
             exist.Name = product.Name;
             exist.Description = product.Description;
@@ -120,10 +165,13 @@ namespace TechNest.Api.Services
         public async Task<bool> DeleteProduct(int id)
         {
             var product = await context.Products.FindAsync(id);
-            if (product is null) return false;
+
+            if (product is null)
+                return false;
 
             context.Products.Remove(product);
             await context.SaveChangesAsync();
+
             return true;
         }
     }

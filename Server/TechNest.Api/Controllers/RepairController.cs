@@ -1,4 +1,6 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 using TechNest.Api.DTOs;
 using TechNest.Api.Services.Interfaces;
 
@@ -6,6 +8,7 @@ namespace TechNest.Api.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class RepairController(IRepairService service) : ControllerBase
     {
         [HttpGet]
@@ -18,37 +21,83 @@ namespace TechNest.Api.Controllers
         public async Task<ActionResult<RepairResponseDto>> GetRepairById(int id)
         {
             var repair = await service.GetRepairById(id);
-            return repair is null ? NotFound("Repair ticket not found") : Ok(repair);
+
+            return repair is null
+                ? NotFound("Repair ticket not found")
+                : Ok(repair);
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateRepair(CreateRepairDto repairDto)
+        public async Task<IActionResult> CreateRepair(
+            CreateRepairDto repairDto)
         {
-            var createdRepair = await service.CreateRepair(repairDto);
-            return CreatedAtAction(nameof(GetRepairById), new { id = createdRepair.Id }, createdRepair);
+            var createdRepair =
+                await service.CreateRepair(repairDto);
+
+            return CreatedAtAction(
+                nameof(GetRepairById),
+                new { id = createdRepair.Id },
+                createdRepair
+            );
         }
 
         [HttpPut("{id}/status")]
-        public async Task<ActionResult> UpdateRepairStatus(int id, UpdateRepairStatusDto updateDto)
+        public async Task<ActionResult> UpdateRepairStatus(
+            int id,
+            UpdateRepairStatusDto updateDto)
         {
-            var updated = await service.UpdateRepairStatus(id, updateDto);
-            return updated ? NoContent() : NotFound("Repair ticket not found");
+            var updated =
+                await service.UpdateRepairStatus(id, updateDto);
+
+            return updated
+                ? NoContent()
+                : NotFound("Repair ticket not found");
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateRepair(int id, [FromBody] CreateRepairDto repairDto)
+        public async Task<IActionResult> UpdateRepair(
+            int id,
+            [FromBody] CreateRepairDto repairDto)
         {
-            var result = await service.UpdateRepair(id, repairDto);
-            if (result is null) return NotFound("Repair ticket not found.");
+            var result =
+                await service.UpdateRepair(id, repairDto);
+
+            if (result is null)
+            {
+                return NotFound("Repair ticket not found.");
+            }
+
             return Ok(result);
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteRepair(int id)
         {
-            var success = await service.DeleteRepair(id);
-            if (!success) return NotFound("Repair ticket not found.");
+            var success =
+                await service.DeleteRepair(id);
+
+            if (!success)
+            {
+                return NotFound("Repair ticket not found.");
+            }
+
             return NoContent();
+        }
+
+        [HttpGet("my-repairs")]
+        public async Task<ActionResult<List<RepairResponseDto>>> GetMyRepairs()
+        {
+            var userId =
+                User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized();
+            }
+
+            return Ok(
+                await service.GetRepairsByCustomerId(userId)
+            );
         }
     }
 }

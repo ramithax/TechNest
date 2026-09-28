@@ -18,11 +18,12 @@ namespace TechNest.Api.Models
         public required string DeviceModel { get; set; }
         public required string IssueDescription { get; set; }
 
-        // Added ImageUrl property
         public string? ImageUrl { get; set; }
 
         public RepairStatus Status { get; set; } = RepairStatus.Pending;
+
         public string? AiDiagnosticReport { get; set; }
+
         public decimal EstimatedCost { get; set; }
 
         public int? TechnicianId { get; set; }
@@ -31,6 +32,10 @@ namespace TechNest.Api.Models
         public int? RepairServiceId { get; set; }
         public RepairService? RepairService { get; set; }
 
+        // Customer's selected repair appointment date and time
+        public DateTime AppointmentDate { get; set; }
+
+        // System timestamps
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
     }

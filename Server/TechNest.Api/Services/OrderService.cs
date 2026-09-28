@@ -11,7 +11,6 @@ namespace TechNest.Api.Services
         public async Task<List<OrderResponseDto>> GetAllOrders()
         {
             return await context.Orders
-                .Include(o => o.Items)
                 .OrderByDescending(o => o.CreatedAt)
                 .Select(o => new OrderResponseDto
                 {
@@ -27,6 +26,7 @@ namespace TechNest.Api.Services
                     TrackingNumber = o.TrackingNumber,
                     CreatedAt = o.CreatedAt,
                     UpdatedAt = o.UpdatedAt,
+
                     Items = o.Items.Select(i => new OrderItemResponseDto
                     {
                         Id = i.Id,
@@ -40,10 +40,71 @@ namespace TechNest.Api.Services
                 .ToListAsync();
         }
 
+        public async Task<PagedOrderResponseDto> GetOrdersByUserId(
+            int userId,
+            int page = 1,
+            int pageSize = 10)
+        {
+            if (page < 1)
+                page = 1;
+
+            if (pageSize < 1 || pageSize > 50)
+                pageSize = 10;
+
+            var query = context.Orders
+                .Where(o => o.UserId == userId)
+                .OrderByDescending(o => o.CreatedAt);
+
+            var totalCount = await query.CountAsync();
+
+            var totalPages = (int)Math.Ceiling(
+                totalCount / (double)pageSize
+            );
+
+            var orders = await query
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .Select(o => new OrderResponseDto
+                {
+                    Id = o.Id,
+                    UserId = o.UserId,
+                    CustomerName = o.CustomerName,
+                    CustomerEmail = o.CustomerEmail,
+                    ShippingAddress = o.ShippingAddress,
+                    ContactNumber = o.ContactNumber,
+                    OrderType = o.OrderType,
+                    Status = o.Status,
+                    TotalAmount = o.TotalAmount,
+                    TrackingNumber = o.TrackingNumber,
+                    CreatedAt = o.CreatedAt,
+                    UpdatedAt = o.UpdatedAt,
+
+                    Items = o.Items.Select(i => new OrderItemResponseDto
+                    {
+                        Id = i.Id,
+                        ProductId = i.ProductId,
+                        ProductName = i.ProductName,
+                        UnitPrice = i.UnitPrice,
+                        Quantity = i.Quantity,
+                        TotalPrice = i.TotalPrice
+                    }).ToList()
+                })
+                .ToListAsync();
+
+            return new PagedOrderResponseDto
+            {
+                Items = orders,
+                Page = page,
+                PageSize = pageSize,
+                TotalCount = totalCount,
+                TotalPages = totalPages,
+                HasNextPage = page < totalPages
+            };
+        }
+
         public async Task<OrderResponseDto?> GetOrderById(int id)
         {
             return await context.Orders
-                .Include(o => o.Items)
                 .Where(o => o.Id == id)
                 .Select(o => new OrderResponseDto
                 {
@@ -59,6 +120,7 @@ namespace TechNest.Api.Services
                     TrackingNumber = o.TrackingNumber,
                     CreatedAt = o.CreatedAt,
                     UpdatedAt = o.UpdatedAt,
+
                     Items = o.Items.Select(i => new OrderItemResponseDto
                     {
                         Id = i.Id,
@@ -74,7 +136,10 @@ namespace TechNest.Api.Services
 
         public async Task<OrderResponseDto> CreateOrder(CreateOrderDto dto)
         {
-            var productIds = dto.Items.Select(i => i.ProductId).ToList();
+            var productIds = dto.Items
+                .Select(i => i.ProductId)
+                .ToList();
+
             var products = await context.Products
                 .Where(p => productIds.Contains(p.Id))
                 .ToDictionaryAsync(p => p.Id);
@@ -86,7 +151,9 @@ namespace TechNest.Api.Services
             {
                 if (!products.TryGetValue(itemDto.ProductId, out var product))
                 {
-                    throw new InvalidOperationException($"Product with ID {itemDto.ProductId} was not found.");
+                    throw new InvalidOperationException(
+                        $"Product with ID {itemDto.ProductId} was not found."
+                    );
                 }
 
                 var orderItem = new OrderItem
@@ -117,6 +184,7 @@ namespace TechNest.Api.Services
             };
 
             context.Orders.Add(newOrder);
+
             await context.SaveChangesAsync();
 
             return new OrderResponseDto
@@ -133,6 +201,7 @@ namespace TechNest.Api.Services
                 TrackingNumber = newOrder.TrackingNumber,
                 CreatedAt = newOrder.CreatedAt,
                 UpdatedAt = newOrder.UpdatedAt,
+
                 Items = newOrder.Items.Select(i => new OrderItemResponseDto
                 {
                     Id = i.Id,
@@ -145,29 +214,98 @@ namespace TechNest.Api.Services
             };
         }
 
-        public async Task<bool> UpdateOrderStatus(int id, string newStatus, string? trackingNumber = null)
+        public async Task<bool> UpdateOrderStatus(
+            int id,
+            string newStatus,
+            string? trackingNumber = null)
         {
             var order = await context.Orders.FindAsync(id);
-            if (order is null) return false;
+
+            if (order is null)
+                return false;
 
             order.Status = newStatus;
             order.TrackingNumber = trackingNumber;
             order.UpdatedAt = DateTime.UtcNow;
 
             await context.SaveChangesAsync();
+
             return true;
         }
 
         public async Task<bool> CancelOrder(int id)
         {
             var order = await context.Orders.FindAsync(id);
-            if (order is null) return false;
+
+            if (order is null)
+                return false;
 
             order.Status = "Cancelled";
             order.UpdatedAt = DateTime.UtcNow;
 
             await context.SaveChangesAsync();
+
             return true;
+        }
+
+        public async Task<PagedOrderResponseDto> GetAllOrdersPaged(
+    int page = 1,
+    int pageSize = 10)
+        {
+            if (page < 1)
+                page = 1;
+
+            if (pageSize < 1 || pageSize > 50)
+                pageSize = 10;
+
+            var query = context.Orders
+                .OrderByDescending(o => o.CreatedAt);
+
+            var totalCount = await query.CountAsync();
+
+            var totalPages = (int)Math.Ceiling(
+                totalCount / (double)pageSize
+            );
+
+            var orders = await query
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .Select(o => new OrderResponseDto
+                {
+                    Id = o.Id,
+                    UserId = o.UserId,
+                    CustomerName = o.CustomerName,
+                    CustomerEmail = o.CustomerEmail,
+                    ShippingAddress = o.ShippingAddress,
+                    ContactNumber = o.ContactNumber,
+                    OrderType = o.OrderType,
+                    Status = o.Status,
+                    TotalAmount = o.TotalAmount,
+                    TrackingNumber = o.TrackingNumber,
+                    CreatedAt = o.CreatedAt,
+                    UpdatedAt = o.UpdatedAt,
+
+                    Items = o.Items.Select(i => new OrderItemResponseDto
+                    {
+                        Id = i.Id,
+                        ProductId = i.ProductId,
+                        ProductName = i.ProductName,
+                        UnitPrice = i.UnitPrice,
+                        Quantity = i.Quantity,
+                        TotalPrice = i.TotalPrice
+                    }).ToList()
+                })
+                .ToListAsync();
+
+            return new PagedOrderResponseDto
+            {
+                Items = orders,
+                Page = page,
+                PageSize = pageSize,
+                TotalCount = totalCount,
+                TotalPages = totalPages,
+                HasNextPage = page < totalPages
+            };
         }
     }
 }

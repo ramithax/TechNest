@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TechNest.Api.Dtos.PcBuilderDto;
@@ -8,9 +9,10 @@ namespace TechNest.Api.Controllers
     [Route("api/[controller]")]
     [ApiController]
     [Authorize]
-    public class PcBuildController(IPcBuildService service) : ControllerBase
+    public class PcBuildController(IPcBuildService service)
+        : ControllerBase
     {
-        // POST: api/PcBuild
+        // Create a new PC build
         [HttpPost]
         public async Task<ActionResult<PcBuildDto>> CreateBuild()
         {
@@ -19,15 +21,32 @@ namespace TechNest.Api.Controllers
             if (userId == null)
                 return Unauthorized();
 
-            var build = await service.CreateBuild(userId.Value);
+            var build = await service.CreateBuild(
+                userId.Value);
 
             return Ok(build);
         }
 
+        // Get PC build history
+        [HttpGet("history")]
+        public async Task<ActionResult<List<PcBuildHistoryDto>>>
+            GetBuildHistory()
+        {
+            var userId = GetUserId();
 
-        // GET: api/PcBuild/{buildId}
+            if (userId == null)
+                return Unauthorized();
+
+            return Ok(
+                await service.GetBuildHistory(
+                    userId.Value)
+            );
+        }
+
+        // Get a specific PC build
         [HttpGet("{buildId:int}")]
-        public async Task<ActionResult<PcBuildDto>> GetBuild(int buildId)
+        public async Task<ActionResult<PcBuildDto>> GetBuild(
+            int buildId)
         {
             var userId = GetUserId();
 
@@ -39,13 +58,13 @@ namespace TechNest.Api.Controllers
                 userId.Value);
 
             if (build == null)
-                return NotFound("PC build not found.");
+                return NotFound(
+                    "PC build not found.");
 
             return Ok(build);
         }
 
-
-        // POST: api/PcBuild/{buildId}/items
+        // Add product to PC build
         [HttpPost("{buildId:int}/items")]
         public async Task<ActionResult<BuildItemDto>> AddBuildItem(
             int buildId,
@@ -64,7 +83,8 @@ namespace TechNest.Api.Controllers
                     request);
 
                 if (item == null)
-                    return NotFound("PC build not found.");
+                    return NotFound(
+                        "PC build not found.");
 
                 return Ok(item);
             }
@@ -78,8 +98,7 @@ namespace TechNest.Api.Controllers
             }
         }
 
-
-        // PUT: api/PcBuild/{buildId}/items/{itemId}
+        // Update PC build item
         [HttpPut("{buildId:int}/items/{itemId:int}")]
         public async Task<ActionResult<BuildItemDto>> UpdateItem(
             int buildId,
@@ -115,8 +134,7 @@ namespace TechNest.Api.Controllers
             }
         }
 
-
-        // DELETE: api/PcBuild/{buildId}/items/{itemId}
+        // Delete PC build item
         [HttpDelete("{buildId:int}/items/{itemId:int}")]
         public async Task<IActionResult> DeleteItem(
             int buildId,
@@ -133,14 +151,15 @@ namespace TechNest.Api.Controllers
                 userId.Value);
 
             if (!deleted)
+            {
                 return NotFound(
                     "PC build or build item not found.");
+            }
 
             return NoContent();
         }
 
-
-        // GET: api/PcBuild/{buildId}/summary
+        // Get build summary
         [HttpGet("{buildId:int}/summary")]
         public async Task<ActionResult<BuildSummaryDto>> GetSummary(
             int buildId)
@@ -155,25 +174,26 @@ namespace TechNest.Api.Controllers
                 userId.Value);
 
             if (summary == null)
-                return NotFound("PC build not found.");
+                return NotFound(
+                    "PC build not found.");
 
             return Ok(summary);
         }
 
-
-        // Get logged-in user's ID from JWT
+        // Get authenticated user ID
         private int? GetUserId()
         {
             var claim = User.FindFirst(
-                System.Security.Claims.ClaimTypes.NameIdentifier);
+                ClaimTypes.NameIdentifier);
 
             if (claim == null)
                 return null;
 
-            if (!int.TryParse(claim.Value, out var userId))
-                return null;
-
-            return userId;
+            return int.TryParse(
+                claim.Value,
+                out var userId)
+                ? userId
+                : null;
         }
     }
 }

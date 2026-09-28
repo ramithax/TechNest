@@ -28,8 +28,7 @@ export function LoginPage() {
         if (!password) {
             newErrors.password = "Password is required";
         } else if (password.length < 6) {
-            newErrors.password =
-                "Password must be at least 6 characters";
+            newErrors.password = "Password must be at least 6 characters";
         }
 
         if (Object.keys(newErrors).length > 0) {
@@ -48,13 +47,12 @@ export function LoginPage() {
             });
 
             const accessToken = res.data.accessToken;
-
             const decoded = jwtDecode(accessToken);
 
             const role =
                 decoded.role ||
                 decoded[
-                "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"
+                    "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"
                 ];
 
             if (role?.toLowerCase() !== "admin") {
@@ -74,7 +72,6 @@ export function LoginPage() {
             toast.success("Login successful");
 
             navigate("/admin");
-
         } catch (error) {
             console.error("Login failed:", error);
             console.log(
@@ -93,14 +90,13 @@ export function LoginPage() {
                     "Something went wrong. Please try again."
                 );
             }
-
         } finally {
             setLoading(false);
         }
     };
 
     return (
-        <div className="relative min-h-screen w-full overflow-hidden bg-[#020617]">
+        <div className="relative min-h-screen w-full overflow-hidden bg-[#18181b]">
 
             {/* Background Video */}
             <video
@@ -116,28 +112,20 @@ export function LoginPage() {
                 />
             </video>
 
-            {/* Dark Blue / Purple Overlay */}
-            <div className="absolute inset-0 bg-gradient-to-r from-[#020617]/95 via-[#07102d]/80 via-[#10104a]/45 to-transparent" />
-
-            {/* Subtle Purple Glow */}
-            <div className="absolute -left-32 top-1/4 h-[500px] w-[500px] rounded-full bg-purple-700/10 blur-[140px]" />
-
-            {/* Subtle Blue Glow */}
-            <div className="absolute left-[35%] top-1/3 h-[400px] w-[400px] rounded-full bg-blue-600/10 blur-[130px]" />
-
             {/* Login Section */}
             <div className="relative z-10 flex min-h-screen items-center">
 
                 <div className="ml-[8%] w-full max-w-[430px]">
 
-                    {/* Glass Container */}
+                    {/* Login Card */}
                     <div
                         className="
                             rounded-2xl
-                            border border-blue-400/20
-                            bg-[#020617]/55
+                            border
+                            border-white/15
+                            bg-[#18181b]/85
                             p-8
-                            shadow-[0_0_40px_rgba(37,99,235,0.12)]
+                            shadow-2xl
                             backdrop-blur-xl
                         "
                     >
@@ -147,25 +135,17 @@ export function LoginPage() {
 
                             <h1
                                 className="
-                                    bg-gradient-to-r
-                                    from-white
-                                    via-blue-200
-                                    to-purple-300
-                                    bg-clip-text
                                     text-5xl
                                     font-bold
                                     tracking-tight
-                                    text-transparent
+                                    text-white
                                 "
                             >
                                 TechNest
                             </h1>
 
-                            <h3 className="mt-1 text-3xl font-semibold tracking-tight text-blue-100/90">
-                                Admin
-                            </h3>
 
-                            <p className="mt-3 text-sm text-blue-100/60">
+                            <p className="mt-3 text-sm text-white/50">
                                 Sign in to continue to your dashboard
                             </p>
 
@@ -182,7 +162,11 @@ export function LoginPage() {
 
                                 <label
                                     htmlFor="email"
-                                    className="text-sm font-medium text-blue-100/80"
+                                    className="
+                                        text-sm
+                                        font-medium
+                                        text-white/75
+                                    "
                                 >
                                     Email
                                 </label>
@@ -204,18 +188,18 @@ export function LoginPage() {
                                     className="
                                         h-12
                                         rounded-lg
-                                        border-blue-400/20
-                                        bg-blue-950/30
+                                        border-white/15
+                                        bg-white/[0.07]
                                         px-4
-                                        text-blue-50
-                                        placeholder:text-blue-200/35
-                                        backdrop-blur-md
+                                        text-white
+                                        placeholder:text-white/30
                                         transition
-                                        hover:border-blue-400/30
-                                        focus:border-cyan-400/50
-                                        focus:bg-blue-900/30
+                                        hover:border-white/25
+                                        hover:bg-white/[0.09]
+                                        focus:border-white/40
+                                        focus:bg-white/[0.10]
                                         focus-visible:ring-1
-                                        focus-visible:ring-cyan-400/30
+                                        focus-visible:ring-white/20
                                     "
                                 />
 
@@ -232,7 +216,11 @@ export function LoginPage() {
 
                                 <label
                                     htmlFor="password"
-                                    className="text-sm font-medium text-blue-100/80"
+                                    className="
+                                        text-sm
+                                        font-medium
+                                        text-white/75
+                                    "
                                 >
                                     Password
                                 </label>
@@ -254,18 +242,18 @@ export function LoginPage() {
                                     className="
                                         h-12
                                         rounded-lg
-                                        border-blue-400/20
-                                        bg-blue-950/30
+                                        border-white/15
+                                        bg-white/[0.07]
                                         px-4
-                                        text-blue-50
-                                        placeholder:text-blue-200/35
-                                        backdrop-blur-md
+                                        text-white
+                                        placeholder:text-white/30
                                         transition
-                                        hover:border-blue-400/30
-                                        focus:border-cyan-400/50
-                                        focus:bg-blue-900/30
+                                        hover:border-white/25
+                                        hover:bg-white/[0.09]
+                                        focus:border-white/40
+                                        focus:bg-white/[0.10]
                                         focus-visible:ring-1
-                                        focus-visible:ring-cyan-400/30
+                                        focus-visible:ring-white/20
                                     "
                                 />
 
@@ -284,9 +272,9 @@ export function LoginPage() {
                                     type="button"
                                     className="
                                         text-sm
-                                        text-blue-300/60
+                                        text-white/45
                                         transition
-                                        hover:text-cyan-300
+                                        hover:text-white/80
                                     "
                                 >
                                     Forgot password?
@@ -303,23 +291,16 @@ export function LoginPage() {
                                     w-full
                                     rounded-lg
                                     border
-                                    border-blue-400/30
-                                    bg-gradient-to-r
-                                    from-blue-600/80
-                                    via-indigo-600/80
-                                    to-purple-600/80
+                                    border-white/20
+                                    bg-white
                                     text-base
                                     font-semibold
-                                    text-white
-                                    shadow-[0_0_25px_rgba(59,130,246,0.25)]
-                                    backdrop-blur-sm
+                                    text-black
+                                    shadow-lg
                                     transition-all
                                     duration-300
-                                    hover:border-cyan-300/40
-                                    hover:from-blue-500
-                                    hover:via-indigo-500
-                                    hover:to-purple-500
-                                    hover:shadow-[0_0_30px_rgba(59,130,246,0.4)]
+                                    hover:bg-white/90
+                                    hover:shadow-xl
                                 "
                             >
                                 {loading
@@ -330,7 +311,14 @@ export function LoginPage() {
                         </form>
 
                         {/* Footer */}
-                        <p className="mt-6 text-center text-xs text-blue-200/40">
+                        <p
+                            className="
+                                mt-6
+                                text-center
+                                text-xs
+                                text-white/30
+                            "
+                        >
                             © 2026 TechNest. All rights reserved.
                         </p>
 

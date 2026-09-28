@@ -16,5 +16,7 @@ namespace TechNest.Api.Services.Interfaces
 
         Task<BuildSummaryDto?> GetSummary(int buildId, int userId);
 
+        Task<List<PcBuildHistoryDto>> GetBuildHistory(int userId);
+
     }
 }
