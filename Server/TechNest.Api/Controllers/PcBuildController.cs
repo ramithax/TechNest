@@ -12,6 +12,10 @@ namespace TechNest.Api.Controllers
     public class PcBuildController(IPcBuildService service)
         : ControllerBase
     {
+        // ==========================================
+        // CUSTOMER
+        // ==========================================
+
         // Create a new PC build
         [HttpPost]
         public async Task<ActionResult<PcBuildDto>> CreateBuild()
@@ -179,6 +183,41 @@ namespace TechNest.Api.Controllers
 
             return Ok(summary);
         }
+
+        // ==========================================
+        // ADMIN
+        // ==========================================
+
+        // Get all PC builds
+        [Authorize(Roles = "Admin")]
+        [HttpGet("admin")]
+        public async Task<ActionResult<List<PcBuildDto>>>
+            GetAllBuilds()
+        {
+            return Ok(
+                await service.GetAllBuilds()
+            );
+        }
+
+        // Get a specific PC build
+        [Authorize(Roles = "Admin")]
+        [HttpGet("admin/{buildId:int}")]
+        public async Task<ActionResult<PcBuildDto>>
+            GetAdminBuild(int buildId)
+        {
+            var build = await service.GetBuildById(
+                buildId);
+
+            if (build == null)
+                return NotFound(
+                    "PC build not found.");
+
+            return Ok(build);
+        }
+
+        // ==========================================
+        // HELPERS
+        // ==========================================
 
         // Get authenticated user ID
         private int? GetUserId()

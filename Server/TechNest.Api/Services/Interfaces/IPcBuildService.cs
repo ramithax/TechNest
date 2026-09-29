@@ -8,15 +8,31 @@ namespace TechNest.Api.Services.Interfaces
 
         Task<PcBuildDto?> GetBuild(int buildId, int userId);
 
-        Task<BuildItemDto?> AddBuildItem(int buildId, int userId, BuildItemRequestDto request);
+        Task<List<PcBuildDto>> GetAllBuilds();
 
-        Task<BuildItemDto?> UpdateBuildItem(int buildId, int itemId, int userId, BuildItemRequestDto request);
+        Task<PcBuildDto?> GetBuildById(int buildId);
 
-        Task<bool> DeleteBuildItem(int buildId, int itemId, int userId);
+        Task<BuildItemDto?> AddBuildItem(
+            int buildId,
+            int userId,
+            BuildItemRequestDto request);
 
-        Task<BuildSummaryDto?> GetSummary(int buildId, int userId);
+        Task<BuildItemDto?> UpdateBuildItem(
+            int buildId,
+            int itemId,
+            int userId,
+            BuildItemRequestDto request);
 
-        Task<List<PcBuildHistoryDto>> GetBuildHistory(int userId);
+        Task<bool> DeleteBuildItem(
+            int buildId,
+            int itemId,
+            int userId);
 
+        Task<BuildSummaryDto?> GetSummary(
+            int buildId,
+            int userId);
+
+        Task<List<PcBuildHistoryDto>> GetBuildHistory(
+            int userId);
     }
 }
