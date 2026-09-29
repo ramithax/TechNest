@@ -9,7 +9,7 @@ const navItems = [
     { name: "Orders", path: "/admin/orders", icon: "◫" },
     { name: "Customers", path: "/admin/customers", icon: "♙" },
     { name: "Repairs", path: "/admin/repairs", icon: "⚒" },
-    { name: "PC Builder", path: "/admin/pc-builder", icon: "▣" },
+    { name: "PC Builder", path: "/admin/pcbuilder", icon: "▣" },
     { name: "AI Agents", path: "/admin/ai-agents", icon: "✦" },
 ];
 

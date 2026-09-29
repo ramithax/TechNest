@@ -10,6 +10,7 @@ import { AddProductPage } from "./Pages/AddProductPage";
 import { Toaster } from "@/components/ui/sonner";
 import { UpdateProductPage } from "./Pages/UpdateProductPage";
 import { ThemeProvider } from "./context/ThemeContext";
+import PcBuildsPage from "./Pages/Pcbuilder";
 
 function App() {
   return (
@@ -34,6 +35,7 @@ function App() {
             <Route path="repairs" element={<RepairPage />} />
             <Route path="add-product" element={<AddProductPage />} />
             <Route path="edit-product/:productId" element={<UpdateProductPage />} />
+            <Route path="pcbuilder" element={<PcBuildsPage />} />
 
           </Route>
 

@@ -130,14 +130,14 @@ export default function AdminNavbar() {
                     </button>
 
                     {/* Logout */}
-                    <button
-                        type="button"
-                        onClick={handleLogout}
-                        className="grid h-9 w-9 place-items-center rounded-lg border border-zinc-200 bg-zinc-100 text-zinc-600 dark:border-zinc-800 dark:bg-zinc-900/80 dark:text-zinc-400 transition hover:border-red-300 hover:bg-red-50 hover:text-red-600 dark:hover:border-red-900/50 dark:hover:bg-red-950/30 dark:hover:text-red-400"
-                        title="Logout"
-                    >
-                        <LogOut className="h-4 w-4" />
-                    </button>
+<button
+    type="button"
+    onClick={handleLogout}
+    className="h-9 rounded-lg border border-zinc-200 bg-zinc-100 px-3 text-sm font-medium text-red-600 transition hover:border-red-300 hover:bg-red-50 dark:border-zinc-800 dark:bg-zinc-900/80 dark:text-red-400 dark:hover:border-red-900/50 dark:hover:bg-red-950/30"
+    title="Logout"
+>
+    Logout
+</button>
 
                 </div>
             </div>
