@@ -140,7 +140,7 @@ export function AddProductPage() {
     };
 
     return (
-        <div className="relative min-h-screen bg-zinc-50 text-zinc-900 p-6 md:p-8 overflow-hidden font-sans">
+        <div className="relative min-h-screen bg-zinc-50 text-zinc-900 p-6 md:p-8 overflow-hidden">
             {/* Subtle Background Accents */}
             <div className="pointer-events-none absolute -top-40 -left-40 h-96 w-96 rounded-full bg-emerald-500/5 blur-[120px]" />
             <div className="pointer-events-none absolute top-1/3 -right-40 h-96 w-96 rounded-full bg-blue-500/5 blur-[140px]" />

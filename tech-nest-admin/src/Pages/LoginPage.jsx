@@ -81,7 +81,7 @@ export function LoginPage() {
   };
 
   return (
-    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-zinc-50 px-4 font-sans text-zinc-900">
+    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-zinc-50 px-4 text-zinc-900">
       {/* Iridescence background - KEEPING YOUR ORIGINAL BACKGROUND */}
       <div className="absolute inset-0">
         <Iridescence
@@ -101,15 +101,15 @@ export function LoginPage() {
 
           {/* Header */}
           <div className="mb-8">
-            <p className="mb-2 text-xs font-medium uppercase tracking-[0.18em] text-zinc-400">
-              TechNest
+            <p className="mb-2 text-xs font-medium uppercase tracking-[0.18em] text-zinc-400  flex items-center justify-center">
+              Admin Portal
             </p>
 
-            <h1 className="text-2xl font-semibold tracking-tight text-zinc-900">
-              Admin Portal
+            <h1 className="text-3xl font-semibold tracking-tight text-zinc-900  flex items-center justify-center">
+              TechNest
             </h1>
 
-            <p className="mt-2 text-sm text-zinc-500">
+            <p className="mt-2 text-sm text-zinc-500 flex items-center justify-center">
               Sign in to access the admin dashboard.
             </p>
           </div>

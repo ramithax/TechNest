@@ -242,7 +242,7 @@ function AdminDashboard() {
   }, []);
 
   return (
-    <div className="relative min-h-screen bg-zinc-50 text-zinc-900 dark:bg-[#09090b] dark:text-white p-6 md:p-8 overflow-hidden font-sans transition-colors duration-300">
+    <div className="relative min-h-screen bg-zinc-50 text-zinc-900 dark:bg-[#09090b] dark:text-white p-6 md:p-8 overflow-hidden transition-colors duration-300">
       <div className="pointer-events-none absolute -top-40 -left-40 h-96 w-96 rounded-full bg-emerald-500/10 blur-[120px]" />
       <div className="pointer-events-none absolute top-1/3 -right-40 h-96 w-96 rounded-full bg-blue-500/10 blur-[140px]" />
       <div className="pointer-events-none absolute -bottom-40 left-1/3 h-96 w-96 rounded-full bg-purple-500/10 blur-[130px]" />

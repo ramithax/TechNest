@@ -210,7 +210,7 @@ export function UpdateProductPage() {
     }
 
     return (
-        <div className="relative min-h-screen overflow-hidden bg-zinc-50 p-6 font-sans text-zinc-900 md:p-8">
+        <div className="relative min-h-screen overflow-hidden bg-zinc-50 p-6 text-zinc-900 md:p-8">
 
             {/* Background accents */}
             <div className="pointer-events-none absolute -left-24 -top-24 h-72 w-72 rounded-full bg-emerald-200/30 blur-3xl" />
