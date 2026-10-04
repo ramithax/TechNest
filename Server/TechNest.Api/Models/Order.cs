@@ -1,4 +1,6 @@
-﻿namespace TechNest.Api.Models
+﻿using TechNest.Api.Models.PcBuilder;
+
+namespace TechNest.Api.Models
 {
     public class Order
     {
@@ -14,13 +16,17 @@
 
         public string ContactNumber { get; set; } = string.Empty;
 
-        public string OrderType { get; set; } = "CustomPC";
+        public string OrderType { get; set; } = "Product";
 
         public string Status { get; set; } = "Pending";
 
         public decimal TotalAmount { get; set; }
 
         public string? TrackingNumber { get; set; }
+
+        public int? PcBuildId { get; set; }
+
+        public PcBuild? PcBuild { get; set; }
 
         public List<OrderItem> Items { get; set; } = new();
 

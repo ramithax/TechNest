@@ -82,39 +82,62 @@ namespace TechNest.Api.Services
         // ==========================================
 
         // Get all PC builds for admin
-        public async Task<List<PcBuildDto>> GetAllBuilds()
+        public async Task<PagedPcBuildResponseDto> GetAllBuilds(
+    int page,
+    int pageSize)
         {
-            var builds = await context.PcBuilds
+            page = Math.Max(page, 1);
+            pageSize = Math.Clamp(pageSize, 1, 100);
+
+            var query = context.PcBuilds
                 .Include(b => b.BuildItems)
                 .ThenInclude(bi => bi.Product)
-                .OrderByDescending(b => b.CreatedAt)
+                .OrderByDescending(b => b.CreatedAt);
+
+            var totalCount = await query.CountAsync();
+
+            var builds = await query
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
                 .ToListAsync();
 
-            return builds
-                .Select(build => new PcBuildDto
-                {
-                    Id = build.Id,
-                    UserId = build.UserId,
-                    CreatedAt = build.CreatedAt,
+            var totalPages = (int)Math.Ceiling(
+                totalCount / (double)pageSize);
 
-                    Items = build.BuildItems
-                        .Select(item => new BuildItemDto
-                        {
-                            Id = item.Id,
-                            ProductId = item.ProductId,
-                            ProductName = item.Product.Name,
-                            Category = item.Product.Category,
-                            Brand = item.Product.Brand,
-                            UnitPrice = item.Product.ActualPrice,
-                            Quantity = item.Quantity,
-                            TotalPrice =
-                                item.Product.ActualPrice *
-                                item.Quantity,
-                            Images = item.Product.Images
-                        })
-                        .ToList()
-                })
-                .ToList();
+            return new PagedPcBuildResponseDto
+            {
+                Items = builds
+                    .Select(build => new PcBuildDto
+                    {
+                        Id = build.Id,
+                        UserId = build.UserId,
+                        CreatedAt = build.CreatedAt,
+
+                        Items = build.BuildItems
+                            .Select(item => new BuildItemDto
+                            {
+                                Id = item.Id,
+                                ProductId = item.ProductId,
+                                ProductName = item.Product.Name,
+                                Category = item.Product.Category,
+                                Brand = item.Product.Brand,
+                                UnitPrice = item.Product.ActualPrice,
+                                Quantity = item.Quantity,
+                                TotalPrice =
+                                    item.Product.ActualPrice *
+                                    item.Quantity,
+                                Images = item.Product.Images
+                            })
+                            .ToList()
+                    })
+                    .ToList(),
+
+                Page = page,
+                PageSize = pageSize,
+                TotalCount = totalCount,
+                TotalPages = totalPages,
+                HasNextPage = page < totalPages
+            };
         }
 
         // Get a specific PC build for admin

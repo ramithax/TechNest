@@ -74,6 +74,34 @@ namespace TechNest.Api.Controllers
             }
         }
 
+        [Authorize]
+        [HttpPost("pc-build")]
+        public async Task<IActionResult> CreatePcBuildOrder(
+            CreatePcBuildOrderDto dto)
+        {
+            var userIdClaim =
+                User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (!int.TryParse(userIdClaim, out var userId))
+            {
+                return Unauthorized("Invalid user authentication.");
+            }
+
+            try
+            {
+                var createdOrder = await service.CreatePcBuildOrder(
+                    userId,
+                    dto
+                );
+
+                return Ok(createdOrder);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
         [Authorize(Roles = "Admin")]
         [HttpPut("{id}/status")]
         public async Task<ActionResult> UpdateOrderStatus(
@@ -105,10 +133,13 @@ namespace TechNest.Api.Controllers
         [Authorize(Roles = "Admin")]
         [HttpGet("admin")]
         public async Task<ActionResult<PagedOrderResponseDto>> GetAdminOrders(
-    int page = 1,
-    int pageSize = 10)
+            int page = 1,
+            int pageSize = 10)
         {
-            var result = await service.GetAllOrdersPaged(page, pageSize);
+            var result = await service.GetAllOrdersPaged(
+                page,
+                pageSize
+            );
 
             return Ok(result);
         }

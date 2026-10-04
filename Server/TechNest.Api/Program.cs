@@ -10,6 +10,20 @@ using TechNest.Api.Services.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
+var jwtToken = builder.Configuration["AppSettings:Token"];
+
+Console.WriteLine(
+    $"JWT configured: {!string.IsNullOrWhiteSpace(jwtToken)}, Length: {jwtToken?.Length ?? 0}"
+);
+
+Console.WriteLine(
+    $"ENV JWT Length: {Environment.GetEnvironmentVariable("AppSettings__Token")?.Length ?? 0}"
+);
+
+Console.WriteLine(
+    $"CONFIG JWT Length: {builder.Configuration["AppSettings:Token"]?.Length ?? 0}"
+);
+
 // Add services to the container.
 builder.Services.AddControllers();
 
@@ -42,6 +56,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 // Services
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IPcBuildService, PcBuildService>();
 builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<IRepairService, RepairService>();

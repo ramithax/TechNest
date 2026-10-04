@@ -16,6 +16,11 @@ namespace TechNest.Api.Services.Interfaces
 
         Task<OrderResponseDto> CreateOrder(CreateOrderDto dto);
 
+        Task<OrderResponseDto> CreatePcBuildOrder(
+            int userId,
+            CreatePcBuildOrderDto dto
+        );
+
         Task<bool> UpdateOrderStatus(
             int id,
             string newStatus,

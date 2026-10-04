@@ -189,14 +189,14 @@ namespace TechNest.Api.Controllers
         // ==========================================
 
         // Get all PC builds
-        [Authorize(Roles = "Admin")]
         [HttpGet("admin")]
-        public async Task<ActionResult<List<PcBuildDto>>>
-            GetAllBuilds()
+        public async Task<IActionResult> GetAllBuilds(
+     [FromQuery] int page = 1,
+     [FromQuery] int pageSize = 10)
         {
-            return Ok(
-                await service.GetAllBuilds()
-            );
+            var builds = await service.GetAllBuilds(page, pageSize);
+
+            return Ok(builds);
         }
 
         // Get a specific PC build

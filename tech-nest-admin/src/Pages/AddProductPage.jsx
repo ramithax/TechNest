@@ -15,9 +15,21 @@ export function AddProductPage() {
     const [category, setCategory] = useState("");
     const [stockQuantity, setStockQuantity] = useState("");
     const [brand, setBrand] = useState("");
-
     const [loading, setLoading] = useState(false);
     const [fileKey, setFileKey] = useState(0);
+
+    const categories = [
+        { label: "Laptops", value: "Laptop" },
+        { label: "Monitors", value: "Monitor" },
+        { label: "Motherboards", value: "Motherboard" },
+        { label: "Graphics Cards", value: "GPU" },
+        { label: "Processors", value: "Processor" },
+        { label: "RAM", value: "RAM" },
+        { label: "Storage", value: "Storage" },
+        { label: "Power Supplies", value: "PSU" },
+        { label: "PC Cases", value: "Case" },
+        { label: "CPU Coolers", value: "Cooler" },
+    ];
 
     const handleImageChange = (e) => {
         if (!e.target.files) {
@@ -34,7 +46,7 @@ export function AddProductPage() {
             }
 
             if (file.size > 4 * 1024 * 1024) {
-                toast.error(`${file.name} is larger than 2MB`);
+                toast.error(`${file.name} is larger than 4MB`);
                 continue;
             }
 
@@ -67,7 +79,7 @@ export function AddProductPage() {
             return;
         }
 
-        if (!category.trim()) {
+        if (!category) {
             toast.error("Category is required");
             return;
         }
@@ -97,7 +109,7 @@ export function AddProductPage() {
                 labelPrice: Number(labelPrice),
                 actualPrice: Number(actualPrice),
                 stockQuantity: Number(stockQuantity),
-                category: category.trim(),
+                category: category,
                 brand: brand.trim(),
                 images: imageUrls,
             };
@@ -116,7 +128,6 @@ export function AddProductPage() {
             setCategory("");
             setStockQuantity("");
             setBrand("");
-
             setFileKey((prev) => prev + 1);
 
             navigate("/admin/products");
@@ -259,7 +270,7 @@ export function AddProductPage() {
                             />
 
                             <p className="text-xs text-zinc-400 mt-2">
-                                Maximum 2MB per image
+                                Maximum 4MB per image
                             </p>
 
                             {/* Image Preview */}
@@ -287,16 +298,27 @@ export function AddProductPage() {
                                 Category
                             </label>
 
-                            <input
-                                type="text"
+                            <select
                                 value={category}
                                 onChange={(e) =>
                                     setCategory(e.target.value)
                                 }
-                                placeholder="e.g. Graphics Cards"
                                 disabled={loading}
-                                className="w-full bg-white border border-zinc-200 text-zinc-900 placeholder-zinc-400 rounded-xl px-4 py-2.5 outline-none focus:border-zinc-400 focus:ring-2 focus:ring-zinc-200 transition"
-                            />
+                                className="w-full bg-white border border-zinc-200 text-zinc-900 rounded-xl px-4 py-2.5 outline-none focus:border-zinc-400 focus:ring-2 focus:ring-zinc-200 transition"
+                            >
+                                <option value="" disabled>
+                                    Select a category
+                                </option>
+
+                                {categories.map((item) => (
+                                    <option
+                                        key={item.value}
+                                        value={item.value}
+                                    >
+                                        {item.label}
+                                    </option>
+                                ))}
+                            </select>
                         </div>
 
                         {/* Stock Quantity */}

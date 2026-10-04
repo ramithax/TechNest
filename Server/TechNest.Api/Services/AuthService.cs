@@ -8,14 +8,16 @@ using System.Text;
 using TechNest.Api.Data;
 using TechNest.Api.Dtos.UserDto;
 using TechNest.Api.Models;
+using Google.Apis.Auth;
 using TechNest.Api.Services.Interfaces;
 
 namespace TechNest.Api.Services
 {
     public class AuthService(
-        AppDbContext context,
-        IConfiguration configuration
-    ) : IAuthService
+    AppDbContext context,
+    IConfiguration configuration,
+    IEmailService emailService
+) : IAuthService
     {
         // LOGIN
         public async Task<TokenResponseDto?> Login(LoginDto login)
@@ -276,5 +278,156 @@ namespace TechNest.Api.Services
             return new JwtSecurityTokenHandler()
                 .WriteToken(tokenDescriptor);
         }
+
+        public async Task<TokenResponseDto?> GoogleLogin(
+    GoogleLoginDto request)
+        {
+            GoogleJsonWebSignature.Payload payload;
+
+            try
+            {
+                payload = await GoogleJsonWebSignature.ValidateAsync(
+                    request.IdToken
+                );
+            }
+            catch
+            {
+                return null;
+            }
+
+            if (string.IsNullOrEmpty(payload.Email))
+            {
+                return null;
+            }
+
+            var user = await context.Users
+                .FirstOrDefaultAsync(u => u.Email == payload.Email);
+
+            if (user is null)
+            {
+                user = new User
+                {
+                    Name = payload.Name ?? "Google User",
+                    Email = payload.Email,
+                    PasswordHash = string.Empty
+                };
+
+                context.Users.Add(user);
+
+                await context.SaveChangesAsync();
+            }
+
+            if (user.Isblocked)
+            {
+                return null;
+            }
+
+            return new TokenResponseDto
+            {
+                AccessToken = CreateToken(user),
+                RefreshToken = await GenerateAndSaveRefreshToken(user)
+            };
+        }
+
+        // FORGOT PASSWORD
+        // FORGOT PASSWORD
+        public async Task ForgotPassword(string email)
+        {
+            var user = await context.Users
+                .FirstOrDefaultAsync(u => u.Email == email);
+
+            if (user is null)
+            {
+                return;
+            }
+
+            var tokenBytes =
+                RandomNumberGenerator.GetBytes(32);
+
+            var token =
+                Convert.ToBase64String(tokenBytes);
+
+            user.PasswordResetToken = token;
+
+            user.PasswordResetTokenExpiry =
+                DateTime.UtcNow.AddMinutes(30);
+
+            await context.SaveChangesAsync();
+
+            var resetLink =
+                $"http://localhost:61742/#/reset-password?token={Uri.EscapeDataString(token)}";
+
+            await emailService.SendPasswordResetEmail(
+                user.Email,
+                resetLink
+            );
+        }
+
+        // RESET PASSWORD
+        public async Task<bool> ResetPassword(
+            string token,
+            string newPassword)
+        {
+            var user = await context.Users
+                .FirstOrDefaultAsync(u =>
+                    u.PasswordResetToken == token &&
+                    u.PasswordResetTokenExpiry > DateTime.UtcNow
+                );
+
+            if (user is null)
+            {
+                return false;
+            }
+
+            user.PasswordHash =
+                new PasswordHasher<User>()
+                    .HashPassword(
+                        user,
+                        newPassword
+                    );
+
+            user.PasswordResetToken = null;
+
+            user.PasswordResetTokenExpiry = null;
+
+            await context.SaveChangesAsync();
+
+            return true;
+        }
+
+public async Task<TokenResponseDto?> UpdateProfile(
+    int userId,
+    UpdateProfileDto dto)
+        {
+            var user = await context.Users.FindAsync(userId);
+
+            if (user == null)
+            {
+                return null;
+            }
+
+            var emailExists = await context.Users
+                .AnyAsync(u =>
+                    u.Email == dto.Email &&
+                    u.Id != userId);
+
+            if (emailExists)
+            {
+                return null;
+            }
+
+            user.Name = dto.Name.Trim();
+            user.Email = dto.Email.Trim();
+
+            await context.SaveChangesAsync();
+
+            return new TokenResponseDto
+            {
+                AccessToken = CreateToken(user),
+                RefreshToken = await GenerateAndSaveRefreshToken(user)
+            };
+        }
+
+
     }
 }

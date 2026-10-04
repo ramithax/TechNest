@@ -8,7 +8,9 @@ namespace TechNest.Api.Services.Interfaces
 
         Task<PcBuildDto?> GetBuild(int buildId, int userId);
 
-        Task<List<PcBuildDto>> GetAllBuilds();
+        Task<PagedPcBuildResponseDto> GetAllBuilds(
+    int page,
+    int pageSize);
 
         Task<PcBuildDto?> GetBuildById(int buildId);
 

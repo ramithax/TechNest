@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+
 import api from "@/lib/axios";
 
 export function PcBuildsPage() {
@@ -6,28 +7,44 @@ export function PcBuildsPage() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
 
+    const [page, setPage] = useState(1);
+    const [pageSize] = useState(10);
+    const [totalPages, setTotalPages] = useState(1);
+    const [totalCount, setTotalCount] = useState(0);
+
     const [selectedBuild, setSelectedBuild] = useState(null);
     const [viewLoading, setViewLoading] = useState(false);
 
-    const fetchBuilds = async () => {
+    const fetchBuilds = async (pageNumber = page) => {
         try {
             setLoading(true);
             setError("");
 
-            const response = await api.get("/PcBuild/admin");
+            const response = await api.get("/PcBuild/admin", {
+                params: {
+                    page: pageNumber,
+                    pageSize,
+                },
+            });
 
-            setBuilds(response.data);
+            const data = response.data;
+
+            setBuilds(data.items || []);
+            setPage(data.page || pageNumber);
+            setTotalPages(data.totalPages || 1);
+            setTotalCount(data.totalCount || 0);
         } catch (err) {
             console.error("Failed to fetch PC builds:", err);
             setError("Failed to load PC builds.");
+            setBuilds([]);
         } finally {
             setLoading(false);
         }
     };
 
     useEffect(() => {
-        fetchBuilds();
-    }, []);
+        fetchBuilds(page);
+    }, [page]);
 
     const handleViewBuild = async (buildId) => {
         try {
@@ -64,6 +81,7 @@ export function PcBuildsPage() {
         <div className="relative min-h-screen bg-zinc-50 text-zinc-900 p-6 md:p-8 overflow-hidden">
             {/* Subtle Background Accents */}
             <div className="pointer-events-none absolute -top-40 -left-40 h-96 w-96 rounded-full bg-emerald-500/5 blur-[120px]" />
+
             <div className="pointer-events-none absolute top-1/3 -right-40 h-96 w-96 rounded-full bg-blue-500/5 blur-[140px]" />
 
             <div className="relative z-10">
@@ -190,14 +208,68 @@ export function PcBuildsPage() {
                                 </table>
                             </div>
 
-                            {/* Footer */}
-                            <div className="flex items-center justify-between px-6 py-4 border-t border-zinc-200">
+                            {/* Pagination */}
+                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 px-6 py-4 border-t border-zinc-200">
+                                {/* Count */}
                                 <div className="text-sm text-zinc-500">
                                     Showing{" "}
                                     <span className="text-zinc-800 font-medium">
                                         {builds.length}
                                     </span>{" "}
+                                    of{" "}
+                                    <span className="text-zinc-800 font-medium">
+                                        {totalCount}
+                                    </span>{" "}
                                     PC builds
+                                </div>
+
+                                {/* Pagination Controls */}
+                                <div className="flex items-center gap-2">
+                                    {/* Previous */}
+                                    <button
+                                        onClick={() =>
+                                            setPage((currentPage) =>
+                                                Math.max(
+                                                    1,
+                                                    currentPage - 1
+                                                )
+                                            )
+                                        }
+                                        disabled={page === 1 || loading}
+                                        className="px-3 py-1.5 text-sm rounded-lg border border-zinc-200 bg-white text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 disabled:opacity-40 disabled:cursor-not-allowed transition"
+                                    >
+                                        Previous
+                                    </button>
+
+                                    {/* Page Number */}
+                                    <div className="px-3 py-1.5 text-sm text-zinc-500 whitespace-nowrap">
+                                        Page{" "}
+                                        <span className="text-zinc-900 font-medium">
+                                            {page}
+                                        </span>{" "}
+                                        of{" "}
+                                        <span className="text-zinc-900 font-medium">
+                                            {totalPages}
+                                        </span>
+                                    </div>
+
+                                    {/* Next */}
+                                    <button
+                                        onClick={() =>
+                                            setPage((currentPage) =>
+                                                Math.min(
+                                                    totalPages,
+                                                    currentPage + 1
+                                                )
+                                            )
+                                        }
+                                        disabled={
+                                            page >= totalPages || loading
+                                        }
+                                        className="px-3 py-1.5 text-sm rounded-lg border border-zinc-200 bg-white text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 disabled:opacity-40 disabled:cursor-not-allowed transition"
+                                    >
+                                        Next
+                                    </button>
                                 </div>
                             </div>
                         </>

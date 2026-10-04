@@ -23,23 +23,24 @@ namespace TechNest.Api.Services
                 query = query.Where(p => p.IsActive);
             }
 
-            // Search filter
+            // Search filter - case-insensitive
             if (!string.IsNullOrWhiteSpace(search))
             {
                 search = search.Trim();
 
                 query = query.Where(p =>
-                    p.Name.Contains(search) ||
-                    p.Description.Contains(search) ||
-                    p.Brand.Contains(search));
+                    EF.Functions.ILike(p.Name, $"%{search}%") ||
+                    EF.Functions.ILike(p.Description, $"%{search}%") ||
+                    EF.Functions.ILike(p.Brand, $"%{search}%"));
             }
 
-            // Category filter
+            // Category filter - case-insensitive
             if (!string.IsNullOrWhiteSpace(category))
             {
                 category = category.Trim();
 
-                query = query.Where(p => p.Category == category);
+                query = query.Where(p =>
+                    EF.Functions.ILike(p.Category, category));
             }
 
             var totalCount = await query.CountAsync();

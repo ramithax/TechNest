@@ -24,6 +24,7 @@ namespace TechNest.Api.Services
                     Status = o.Status,
                     TotalAmount = o.TotalAmount,
                     TrackingNumber = o.TrackingNumber,
+                    PcBuildId = o.PcBuildId,
                     CreatedAt = o.CreatedAt,
                     UpdatedAt = o.UpdatedAt,
 
@@ -76,6 +77,7 @@ namespace TechNest.Api.Services
                     Status = o.Status,
                     TotalAmount = o.TotalAmount,
                     TrackingNumber = o.TrackingNumber,
+                    PcBuildId = o.PcBuildId,
                     CreatedAt = o.CreatedAt,
                     UpdatedAt = o.UpdatedAt,
 
@@ -118,6 +120,7 @@ namespace TechNest.Api.Services
                     Status = o.Status,
                     TotalAmount = o.TotalAmount,
                     TrackingNumber = o.TrackingNumber,
+                    PcBuildId = o.PcBuildId,
                     CreatedAt = o.CreatedAt,
                     UpdatedAt = o.UpdatedAt,
 
@@ -199,6 +202,7 @@ namespace TechNest.Api.Services
                 Status = newOrder.Status,
                 TotalAmount = newOrder.TotalAmount,
                 TrackingNumber = newOrder.TrackingNumber,
+                PcBuildId = newOrder.PcBuildId,
                 CreatedAt = newOrder.CreatedAt,
                 UpdatedAt = newOrder.UpdatedAt,
 
@@ -211,6 +215,79 @@ namespace TechNest.Api.Services
                     Quantity = i.Quantity,
                     TotalPrice = i.TotalPrice
                 }).ToList()
+            };
+        }
+
+        public async Task<OrderResponseDto> CreatePcBuildOrder(
+            int userId,
+            CreatePcBuildOrderDto dto)
+        {
+            var build = await context.PcBuilds
+                .Include(b => b.BuildItems)
+                .ThenInclude(bi => bi.Product)
+                .FirstOrDefaultAsync(b =>
+                    b.Id == dto.PcBuildId &&
+                    b.UserId == userId
+                );
+
+            if (build is null)
+            {
+                throw new InvalidOperationException(
+                    "PC build was not found or does not belong to the current user."
+                );
+            }
+
+            if (!build.BuildItems.Any())
+            {
+                throw new InvalidOperationException(
+                    "PC build does not contain any products."
+                );
+            }
+
+            decimal calculatedTotal = 0;
+
+            foreach (var buildItem in build.BuildItems)
+            {
+                calculatedTotal +=
+                    buildItem.Product.ActualPrice * buildItem.Quantity;
+            }
+
+            var newOrder = new Order
+            {
+                UserId = userId,
+                CustomerName = dto.CustomerName,
+                CustomerEmail = dto.CustomerEmail,
+                ShippingAddress = dto.ShippingAddress,
+                ContactNumber = dto.ContactNumber,
+                OrderType = "CustomPC",
+                Status = "Pending",
+                TotalAmount = calculatedTotal,
+                PcBuildId = build.Id,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            };
+
+            context.Orders.Add(newOrder);
+
+            await context.SaveChangesAsync();
+
+            return new OrderResponseDto
+            {
+                Id = newOrder.Id,
+                UserId = newOrder.UserId,
+                CustomerName = newOrder.CustomerName,
+                CustomerEmail = newOrder.CustomerEmail,
+                ShippingAddress = newOrder.ShippingAddress,
+                ContactNumber = newOrder.ContactNumber,
+                OrderType = newOrder.OrderType,
+                Status = newOrder.Status,
+                TotalAmount = newOrder.TotalAmount,
+                TrackingNumber = newOrder.TrackingNumber,
+                PcBuildId = newOrder.PcBuildId,
+                CreatedAt = newOrder.CreatedAt,
+                UpdatedAt = newOrder.UpdatedAt,
+
+                Items = new List<OrderItemResponseDto>()
             };
         }
 
@@ -249,8 +326,8 @@ namespace TechNest.Api.Services
         }
 
         public async Task<PagedOrderResponseDto> GetAllOrdersPaged(
-    int page = 1,
-    int pageSize = 10)
+            int page = 1,
+            int pageSize = 10)
         {
             if (page < 1)
                 page = 1;
@@ -282,6 +359,7 @@ namespace TechNest.Api.Services
                     Status = o.Status,
                     TotalAmount = o.TotalAmount,
                     TrackingNumber = o.TrackingNumber,
+                    PcBuildId = o.PcBuildId,
                     CreatedAt = o.CreatedAt,
                     UpdatedAt = o.UpdatedAt,
 
