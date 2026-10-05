@@ -10,12 +10,21 @@ namespace TechNest.Api.Controllers
     [ApiController]
     public class OrderController(IOrderService service) : ControllerBase
     {
+        // ============================================================
+        // ADMIN - ALL ORDERS
+        // ============================================================
+
         [Authorize(Roles = "Admin")]
         [HttpGet]
         public async Task<ActionResult<List<OrderResponseDto>>> GetOrders()
         {
             return Ok(await service.GetAllOrders());
         }
+
+        // ============================================================
+        // CUSTOMER - MY NORMAL ORDERS
+        // CustomPC orders are excluded in the service.
+        // ============================================================
 
         [Authorize]
         [HttpGet("my-orders")]
@@ -40,9 +49,14 @@ namespace TechNest.Api.Controllers
             return Ok(result);
         }
 
+        // ============================================================
+        // ADMIN - SINGLE ORDER
+        // ============================================================
+
         [Authorize(Roles = "Admin")]
         [HttpGet("{id}")]
-        public async Task<ActionResult<OrderResponseDto>> GetOrderById(int id)
+        public async Task<ActionResult<OrderResponseDto>> GetOrderById(
+            int id)
         {
             var order = await service.GetOrderById(id);
 
@@ -54,9 +68,14 @@ namespace TechNest.Api.Controllers
             return Ok(order);
         }
 
+        // ============================================================
+        // NORMAL PRODUCT ORDER
+        // ============================================================
+
         [Authorize]
         [HttpPost]
-        public async Task<IActionResult> CreateOrder(CreateOrderDto order)
+        public async Task<IActionResult> CreateOrder(
+            CreateOrderDto order)
         {
             try
             {
@@ -73,6 +92,11 @@ namespace TechNest.Api.Controllers
                 return BadRequest(ex.Message);
             }
         }
+
+        // ============================================================
+        // NORMAL PC BUILDER
+        // PcBuild -> Order
+        // ============================================================
 
         [Authorize]
         [HttpPost("pc-build")]
@@ -102,6 +126,10 @@ namespace TechNest.Api.Controllers
             }
         }
 
+        // ============================================================
+        // ADMIN - UPDATE ORDER STATUS
+        // ============================================================
+
         [Authorize(Roles = "Admin")]
         [HttpPut("{id}/status")]
         public async Task<ActionResult> UpdateOrderStatus(
@@ -119,6 +147,10 @@ namespace TechNest.Api.Controllers
                 : NotFound("Order not found");
         }
 
+        // ============================================================
+        // CUSTOMER - CANCEL ORDER
+        // ============================================================
+
         [Authorize]
         [HttpDelete("{id}")]
         public async Task<ActionResult> CancelOrder(int id)
@@ -130,6 +162,10 @@ namespace TechNest.Api.Controllers
                 : NotFound("Order not found");
         }
 
+        // ============================================================
+        // ADMIN - PAGINATED ORDERS
+        // ============================================================
+
         [Authorize(Roles = "Admin")]
         [HttpGet("admin")]
         public async Task<ActionResult<PagedOrderResponseDto>> GetAdminOrders(
@@ -140,6 +176,68 @@ namespace TechNest.Api.Controllers
                 page,
                 pageSize
             );
+
+            return Ok(result);
+        }
+
+        // ============================================================
+        // AI AGENT BUILDER
+        // PcBuildRequest -> Payment -> Order
+        // ============================================================
+
+        [Authorize]
+        [HttpPost("pc-build-request")]
+        public async Task<IActionResult> CreatePcBuildRequestOrder(
+            CreatePcBuildRequestOrderDto dto)
+        {
+            var userIdClaim =
+                User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (!int.TryParse(userIdClaim, out var userId))
+            {
+                return Unauthorized("Invalid user authentication.");
+            }
+
+            try
+            {
+                var createdOrder =
+                    await service.CreatePcBuildRequestOrder(
+                        userId,
+                        dto
+                    );
+
+                return Ok(createdOrder);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new
+                {
+                    message = ex.Message
+                });
+            }
+        }
+
+        [Authorize]
+        [HttpGet("my-pc-build-orders")]
+        public async Task<ActionResult<PagedOrderResponseDto>>
+    GetMyPcBuildOrders(
+        int page = 1,
+        int pageSize = 10)
+        {
+            var userIdClaim =
+                User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (!int.TryParse(userIdClaim, out var userId))
+            {
+                return Unauthorized("Invalid user authentication.");
+            }
+
+            var result =
+                await service.GetPcBuildOrdersByUserId(
+                    userId,
+                    page,
+                    pageSize
+                );
 
             return Ok(result);
         }

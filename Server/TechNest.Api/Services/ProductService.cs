@@ -10,11 +10,11 @@ namespace TechNest.Api.Services
     public class ProductService(AppDbContext context) : IProductService
     {
         public async Task<PagedProductResponseDto> GetAllProducts(
-            int page,
-            int pageSize,
-            bool includeInactive = false,
-            string? search = null,
-            string? category = null)
+    int page,
+    int pageSize,
+    bool includeInactive = false,
+    string? search = null,
+    string? category = null)
         {
             var query = context.Products.AsQueryable();
 
@@ -23,24 +23,23 @@ namespace TechNest.Api.Services
                 query = query.Where(p => p.IsActive);
             }
 
-            // Search filter - case-insensitive
-            if (!string.IsNullOrWhiteSpace(search))
-            {
-                search = search.Trim();
+            search = search?.Trim();
+            category = category?.Trim();
 
-                query = query.Where(p =>
-                    EF.Functions.ILike(p.Name, $"%{search}%") ||
-                    EF.Functions.ILike(p.Description, $"%{search}%") ||
-                    EF.Functions.ILike(p.Brand, $"%{search}%"));
-            }
-
-            // Category filter - case-insensitive
+            // Category filter
             if (!string.IsNullOrWhiteSpace(category))
             {
-                category = category.Trim();
-
                 query = query.Where(p =>
                     EF.Functions.ILike(p.Category, category));
+            }
+
+            // Search filter
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                query = query.Where(p =>
+                    EF.Functions.ILike(p.Name, $"%{search}%") ||
+                    EF.Functions.ILike(p.Brand, $"%{search}%") ||
+                    EF.Functions.ILike(p.Description, $"%{search}%"));
             }
 
             var totalCount = await query.CountAsync();
@@ -49,8 +48,28 @@ namespace TechNest.Api.Services
                 totalCount / (double)pageSize
             );
 
-            var products = await query
-                .OrderByDescending(p => p.CreatedAt)
+            IQueryable<Product> orderedQuery;
+
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                var searchPattern = $"%{search}%";
+
+                orderedQuery = query
+                    .OrderByDescending(p =>
+                        EF.Functions.ILike(p.Name, search) ? 4 :
+                        EF.Functions.ILike(p.Name, searchPattern) ? 3 :
+                        EF.Functions.ILike(p.Brand, searchPattern) ? 2 :
+                        EF.Functions.ILike(p.Description, searchPattern) ? 1 :
+                        0)
+                    .ThenByDescending(p => p.CreatedAt);
+            }
+            else
+            {
+                orderedQuery = query
+                    .OrderByDescending(p => p.CreatedAt);
+            }
+
+            var products = await orderedQuery
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
                 .Select(p => new ProductResponseDto

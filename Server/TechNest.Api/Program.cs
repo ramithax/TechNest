@@ -1,9 +1,12 @@
- using System.Security.Claims;
+using System.Security.Claims;
 using System.Text;
+using System.Text.Json.Serialization;
+
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
+
 using TechNest.Api.Data;
 using TechNest.Api.Services;
 using TechNest.Api.Services.Interfaces;
@@ -25,7 +28,14 @@ Console.WriteLine(
 );
 
 // Add services to the container.
-builder.Services.AddControllers();
+builder.Services
+    .AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.Converters.Add(
+            new JsonStringEnumConverter()
+        );
+    });
 
 builder.Services.AddSwaggerGen(options =>
 {
@@ -61,43 +71,73 @@ builder.Services.AddScoped<IPcBuildService, PcBuildService>();
 builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<IRepairService, RepairService>();
 
+builder.Services.AddHttpClient<IAgentAIService, AgentAIClient>(
+    client =>
+    {
+        client.BaseAddress = new Uri(
+            builder.Configuration["AgentAI:BaseUrl"]!
+        );
+
+        client.Timeout = TimeSpan.FromMinutes(4);
+    }
+);
+
+builder.Services.AddScoped<IAgentWorkflowService, AgentWorkflowService>();
+
+builder.Services.AddScoped<
+    IPcBuildRequestService,
+    PcBuildRequestService>();
+
 // JWT Authentication
 builder.Services
     .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
-        options.TokenValidationParameters = new TokenValidationParameters
-        {
-            ValidateIssuer = true,
-            ValidIssuer = builder.Configuration["AppSettings:Issuer"],
+        options.TokenValidationParameters =
+            new TokenValidationParameters
+            {
+                ValidateIssuer = true,
+                ValidIssuer =
+                    builder.Configuration[
+                        "AppSettings:Issuer"
+                    ],
 
-            ValidateAudience = true,
-            ValidAudience = builder.Configuration["AppSettings:Audience"],
+                ValidateAudience = true,
+                ValidAudience =
+                    builder.Configuration[
+                        "AppSettings:Audience"
+                    ],
 
-            ValidateLifetime = true,
+                ValidateLifetime = true,
 
-            ValidateIssuerSigningKey = true,
-            IssuerSigningKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(
-                    builder.Configuration["AppSettings:Token"]!
-                )
-            ),
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey =
+                    new SymmetricSecurityKey(
+                        Encoding.UTF8.GetBytes(
+                            builder.Configuration[
+                                "AppSettings:Token"
+                            ]!
+                        )
+                    ),
 
-            RoleClaimType = ClaimTypes.Role,
-            NameClaimType = ClaimTypes.Name
-        };
+                RoleClaimType = ClaimTypes.Role,
+                NameClaimType = ClaimTypes.Name
+            };
     });
 
 // CORS
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("DevelopmentCors", policy =>
-    {
-        policy
-            .AllowAnyOrigin()
-            .AllowAnyHeader()
-            .AllowAnyMethod();
-    });
+    options.AddPolicy(
+        "DevelopmentCors",
+        policy =>
+        {
+            policy
+                .AllowAnyOrigin()
+                .AllowAnyHeader()
+                .AllowAnyMethod();
+        }
+    );
 });
 
 var app = builder.Build();

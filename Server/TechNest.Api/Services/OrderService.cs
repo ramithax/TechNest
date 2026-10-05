@@ -2,6 +2,7 @@
 using TechNest.Api.Data;
 using TechNest.Api.Dtos.OrderDto;
 using TechNest.Api.Models;
+using TechNest.Api.Models.PcBuildRequest;
 using TechNest.Api.Services.Interfaces;
 
 namespace TechNest.Api.Services
@@ -27,7 +28,6 @@ namespace TechNest.Api.Services
                     PcBuildId = o.PcBuildId,
                     CreatedAt = o.CreatedAt,
                     UpdatedAt = o.UpdatedAt,
-
                     Items = o.Items.Select(i => new OrderItemResponseDto
                     {
                         Id = i.Id,
@@ -41,6 +41,12 @@ namespace TechNest.Api.Services
                 .ToListAsync();
         }
 
+        // ============================================================
+        // CUSTOMER ORDERS
+        // Only normal product orders are returned here.
+        // CustomPC orders are handled separately.
+        // ============================================================
+
         public async Task<PagedOrderResponseDto> GetOrdersByUserId(
             int userId,
             int page = 1,
@@ -52,8 +58,12 @@ namespace TechNest.Api.Services
             if (pageSize < 1 || pageSize > 50)
                 pageSize = 10;
 
+            // IMPORTANT:
+            // Filter CustomPC orders BEFORE pagination.
             var query = context.Orders
-                .Where(o => o.UserId == userId)
+                .Where(o =>
+                    o.UserId == userId &&
+                    o.OrderType != "CustomPC")
                 .OrderByDescending(o => o.CreatedAt);
 
             var totalCount = await query.CountAsync();
@@ -80,7 +90,6 @@ namespace TechNest.Api.Services
                     PcBuildId = o.PcBuildId,
                     CreatedAt = o.CreatedAt,
                     UpdatedAt = o.UpdatedAt,
-
                     Items = o.Items.Select(i => new OrderItemResponseDto
                     {
                         Id = i.Id,
@@ -123,7 +132,6 @@ namespace TechNest.Api.Services
                     PcBuildId = o.PcBuildId,
                     CreatedAt = o.CreatedAt,
                     UpdatedAt = o.UpdatedAt,
-
                     Items = o.Items.Select(i => new OrderItemResponseDto
                     {
                         Id = i.Id,
@@ -137,6 +145,10 @@ namespace TechNest.Api.Services
                 .FirstOrDefaultAsync();
         }
 
+        // ============================================================
+        // NORMAL PRODUCT ORDER
+        // ============================================================
+
         public async Task<OrderResponseDto> CreateOrder(CreateOrderDto dto)
         {
             var productIds = dto.Items
@@ -148,11 +160,14 @@ namespace TechNest.Api.Services
                 .ToDictionaryAsync(p => p.Id);
 
             var orderItems = new List<OrderItem>();
+
             decimal calculatedTotal = 0;
 
             foreach (var itemDto in dto.Items)
             {
-                if (!products.TryGetValue(itemDto.ProductId, out var product))
+                if (!products.TryGetValue(
+                        itemDto.ProductId,
+                        out var product))
                 {
                     throw new InvalidOperationException(
                         $"Product with ID {itemDto.ProductId} was not found."
@@ -168,6 +183,7 @@ namespace TechNest.Api.Services
                 };
 
                 calculatedTotal += orderItem.TotalPrice;
+
                 orderItems.Add(orderItem);
             }
 
@@ -205,6 +221,150 @@ namespace TechNest.Api.Services
                 PcBuildId = newOrder.PcBuildId,
                 CreatedAt = newOrder.CreatedAt,
                 UpdatedAt = newOrder.UpdatedAt,
+                Items = newOrder.Items.Select(i => new OrderItemResponseDto
+                {
+                    Id = i.Id,
+                    ProductId = i.ProductId,
+                    ProductName = i.ProductName,
+                    UnitPrice = i.UnitPrice,
+                    Quantity = i.Quantity,
+                    TotalPrice = i.TotalPrice
+                }).ToList()
+            };
+        }
+
+        // ============================================================
+        // AI AGENT BUILDER
+        // PcBuildRequest -> Payment -> Order
+        // ============================================================
+
+        public async Task<OrderResponseDto> CreatePcBuildRequestOrder(
+            int userId,
+            CreatePcBuildRequestOrderDto dto)
+        {
+            var request = await context.PcBuildRequests
+                .Include(r => r.Items)
+                .ThenInclude(i => i.Product)
+                .FirstOrDefaultAsync(r =>
+                    r.Id == dto.PcBuildRequestId &&
+                    r.UserId == userId
+                );
+
+            if (request is null)
+            {
+                throw new InvalidOperationException(
+                    "PC build request was not found or does not belong to the current user."
+                );
+            }
+
+            if (request.Status != PcBuildRequestStatus.PaymentPending)
+            {
+                throw new InvalidOperationException(
+                    "This AI PC build is not ready for payment."
+                );
+            }
+
+            if (!request.Items.Any())
+            {
+                throw new InvalidOperationException(
+                    "AI PC build request does not contain any products."
+                );
+            }
+
+            decimal calculatedTotal = 0;
+
+            var orderItems = new List<OrderItem>();
+
+            foreach (var requestItem in request.Items)
+            {
+                if (requestItem.Product is null)
+                {
+                    throw new InvalidOperationException(
+                        $"Product with ID {requestItem.ProductId} was not found."
+                    );
+                }
+
+                var product = requestItem.Product;
+
+                if (!product.IsActive)
+                {
+                    throw new InvalidOperationException(
+                        $"Product '{product.Name}' is no longer available."
+                    );
+                }
+
+                if (product.StockQuantity < requestItem.Quantity)
+                {
+                    throw new InvalidOperationException(
+                        $"Not enough stock for '{product.Name}'."
+                    );
+                }
+
+                var unitPrice = product.ActualPrice;
+
+                var orderItem = new OrderItem
+                {
+                    ProductId = product.Id,
+                    ProductName = product.Name,
+                    UnitPrice = unitPrice,
+                    Quantity = requestItem.Quantity
+                };
+
+                calculatedTotal += orderItem.TotalPrice;
+
+                orderItems.Add(orderItem);
+
+                product.StockQuantity -= requestItem.Quantity;
+            }
+
+            var newOrder = new Order
+            {
+                UserId = userId,
+                CustomerName = dto.CustomerName,
+                CustomerEmail = dto.CustomerEmail,
+                ShippingAddress = dto.ShippingAddress,
+                ContactNumber = dto.ContactNumber,
+
+                // AI Agent order
+                OrderType = "CustomPC",
+
+                Status = "Pending",
+                TotalAmount = calculatedTotal,
+
+                // AI Agent uses PcBuildRequest,
+                // not the normal PcBuild.
+                PcBuildId = null,
+
+                Items = orderItems,
+
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            };
+
+            context.Orders.Add(newOrder);
+
+            // Mark AI build request as paid.
+            request.TotalAmount = calculatedTotal;
+            request.Status = PcBuildRequestStatus.Paid;
+            request.PaidAt = DateTime.UtcNow;
+
+            await context.SaveChangesAsync();
+
+            return new OrderResponseDto
+            {
+                Id = newOrder.Id,
+                UserId = newOrder.UserId,
+                CustomerName = newOrder.CustomerName,
+                CustomerEmail = newOrder.CustomerEmail,
+                ShippingAddress = newOrder.ShippingAddress,
+                ContactNumber = newOrder.ContactNumber,
+                OrderType = newOrder.OrderType,
+                Status = newOrder.Status,
+                TotalAmount = newOrder.TotalAmount,
+                TrackingNumber = newOrder.TrackingNumber,
+                PcBuildId = newOrder.PcBuildId,
+                CreatedAt = newOrder.CreatedAt,
+                UpdatedAt = newOrder.UpdatedAt,
 
                 Items = newOrder.Items.Select(i => new OrderItemResponseDto
                 {
@@ -217,6 +377,11 @@ namespace TechNest.Api.Services
                 }).ToList()
             };
         }
+
+        // ============================================================
+        // NORMAL PC BUILDER
+        // PcBuild -> Order
+        // ============================================================
 
         public async Task<OrderResponseDto> CreatePcBuildOrder(
             int userId,
@@ -249,7 +414,8 @@ namespace TechNest.Api.Services
             foreach (var buildItem in build.BuildItems)
             {
                 calculatedTotal +=
-                    buildItem.Product.ActualPrice * buildItem.Quantity;
+                    buildItem.Product.ActualPrice *
+                    buildItem.Quantity;
             }
 
             var newOrder = new Order
@@ -259,10 +425,16 @@ namespace TechNest.Api.Services
                 CustomerEmail = dto.CustomerEmail,
                 ShippingAddress = dto.ShippingAddress,
                 ContactNumber = dto.ContactNumber,
+
+                // Normal PC Builder
                 OrderType = "CustomPC",
+
                 Status = "Pending",
                 TotalAmount = calculatedTotal,
+
+                // Normal PcBuild ID
                 PcBuildId = build.Id,
+
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
             };
@@ -291,6 +463,10 @@ namespace TechNest.Api.Services
             };
         }
 
+        // ============================================================
+        // UPDATE ORDER STATUS
+        // ============================================================
+
         public async Task<bool> UpdateOrderStatus(
             int id,
             string newStatus,
@@ -310,6 +486,10 @@ namespace TechNest.Api.Services
             return true;
         }
 
+        // ============================================================
+        // CANCEL ORDER
+        // ============================================================
+
         public async Task<bool> CancelOrder(int id)
         {
             var order = await context.Orders.FindAsync(id);
@@ -325,6 +505,10 @@ namespace TechNest.Api.Services
             return true;
         }
 
+        // ============================================================
+        // ADMIN PAGINATED ORDERS
+        // ============================================================
+
         public async Task<PagedOrderResponseDto> GetAllOrdersPaged(
             int page = 1,
             int pageSize = 10)
@@ -336,6 +520,71 @@ namespace TechNest.Api.Services
                 pageSize = 10;
 
             var query = context.Orders
+                .OrderByDescending(o => o.CreatedAt);
+
+            var totalCount = await query.CountAsync();
+
+            var totalPages = (int)Math.Ceiling(
+                totalCount / (double)pageSize
+            );
+
+            var orders = await query
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .Select(o => new OrderResponseDto
+                {
+                    Id = o.Id,
+                    UserId = o.UserId,
+                    CustomerName = o.CustomerName,
+                    CustomerEmail = o.CustomerEmail,
+                    ShippingAddress = o.ShippingAddress,
+                    ContactNumber = o.ContactNumber,
+                    OrderType = o.OrderType,
+                    Status = o.Status,
+                    TotalAmount = o.TotalAmount,
+                    TrackingNumber = o.TrackingNumber,
+                    PcBuildId = o.PcBuildId,
+                    CreatedAt = o.CreatedAt,
+                    UpdatedAt = o.UpdatedAt,
+                    Items = o.Items.Select(i => new OrderItemResponseDto
+                    {
+                        Id = i.Id,
+                        ProductId = i.ProductId,
+                        ProductName = i.ProductName,
+                        UnitPrice = i.UnitPrice,
+                        Quantity = i.Quantity,
+                        TotalPrice = i.TotalPrice
+                    }).ToList()
+                })
+                .ToListAsync();
+
+            return new PagedOrderResponseDto
+            {
+                Items = orders,
+                Page = page,
+                PageSize = pageSize,
+                TotalCount = totalCount,
+                TotalPages = totalPages,
+                HasNextPage = page < totalPages
+            };
+        }
+
+        public async Task<PagedOrderResponseDto> GetPcBuildOrdersByUserId(
+    int userId,
+    int page = 1,
+    int pageSize = 10)
+        {
+            if (page < 1)
+                page = 1;
+
+            if (pageSize < 1 || pageSize > 50)
+                pageSize = 10;
+
+            var query = context.Orders
+                .Where(o =>
+                    o.UserId == userId &&
+                    o.OrderType == "CustomPC" &&
+                    o.PcBuildId != null)
                 .OrderByDescending(o => o.CreatedAt);
 
             var totalCount = await query.CountAsync();
@@ -386,4 +635,5 @@ namespace TechNest.Api.Services
             };
         }
     }
+
 }

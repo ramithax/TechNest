@@ -10,7 +10,7 @@ const navItems = [
     { name: "Customers", path: "/admin/customers", icon: "♙" },
     { name: "Repairs", path: "/admin/repairs", icon: "⚒" },
     { name: "PC Builder", path: "/admin/pcbuilder", icon: "▣" },
-    { name: "AI Agents", path: "/admin/ai-agents", icon: "✦" },
+    { name: "AI Agents", path: "/admin/pc-builder-requests", icon: "✦" },
 ];
 
 function AdminSidebar() {
