@@ -7,6 +7,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
 
+using Resend;
+
 using TechNest.Api.Data;
 using TechNest.Api.Services;
 using TechNest.Api.Services.Interfaces;
@@ -37,6 +39,7 @@ builder.Services
         );
     });
 
+// Swagger
 builder.Services.AddSwaggerGen(options =>
 {
     options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
@@ -52,7 +55,10 @@ builder.Services.AddSwaggerGen(options =>
     options.AddSecurityRequirement(document =>
         new OpenApiSecurityRequirement
         {
-            [new OpenApiSecuritySchemeReference("Bearer", document)] = []
+            [new OpenApiSecuritySchemeReference(
+                "Bearer",
+                document
+            )] = []
         });
 });
 
@@ -71,6 +77,14 @@ builder.Services.AddScoped<IPcBuildService, PcBuildService>();
 builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<IRepairService, RepairService>();
 
+// Resend Email Service
+builder.Services.AddResend(options =>
+{
+    options.ApiToken =
+        builder.Configuration["Resend:ApiKey"]!;
+});
+
+// AI Agent
 builder.Services.AddHttpClient<IAgentAIService, AgentAIClient>(
     client =>
     {
@@ -84,9 +98,11 @@ builder.Services.AddHttpClient<IAgentAIService, AgentAIClient>(
 
 builder.Services.AddScoped<IAgentWorkflowService, AgentWorkflowService>();
 
+// PC Build Request
 builder.Services.AddScoped<
     IPcBuildRequestService,
-    PcBuildRequestService>();
+    PcBuildRequestService
+>();
 
 // JWT Authentication
 builder.Services
@@ -97,12 +113,14 @@ builder.Services
             new TokenValidationParameters
             {
                 ValidateIssuer = true,
+
                 ValidIssuer =
                     builder.Configuration[
                         "AppSettings:Issuer"
                     ],
 
                 ValidateAudience = true,
+
                 ValidAudience =
                     builder.Configuration[
                         "AppSettings:Audience"
@@ -111,6 +129,7 @@ builder.Services
                 ValidateLifetime = true,
 
                 ValidateIssuerSigningKey = true,
+
                 IssuerSigningKey =
                     new SymmetricSecurityKey(
                         Encoding.UTF8.GetBytes(

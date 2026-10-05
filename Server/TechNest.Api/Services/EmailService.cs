@@ -1,38 +1,20 @@
-﻿using System.Net;
-using System.Net.Mail;
+﻿using Resend;
 using TechNest.Api.Services.Interfaces;
 
 namespace TechNest.Api.Services
 {
-    public class EmailService(IConfiguration configuration)
+    public class EmailService(IResend resend)
         : IEmailService
     {
         public async Task SendPasswordResetEmail(
             string email,
             string resetLink)
         {
-            var smtpEmail = configuration["EmailSettings:Email"];
-            var smtpPassword = configuration["EmailSettings:AppPassword"];
-
-            using var client = new SmtpClient("smtp.gmail.com", 587)
+            var message = new EmailMessage
             {
-                EnableSsl = true,
-                Credentials = new NetworkCredential(
-                    smtpEmail,
-                    smtpPassword
-                )
-            };
-
-            using var message = new MailMessage
-            {
-                From = new MailAddress(
-                    smtpEmail!,
-                    "TechNest"
-                ),
-
+                From = "onboarding@resend.dev",
                 Subject = "Reset Your TechNest Password",
-
-                Body = $"""
+                HtmlBody = $"""
                     <!DOCTYPE html>
                     <html>
                     <head>
@@ -273,14 +255,12 @@ namespace TechNest.Api.Services
 
                     </body>
                     </html>
-                    """,
-
-                IsBodyHtml = true
+                    """
             };
 
             message.To.Add(email);
 
-            await client.SendMailAsync(message);
+            await resend.EmailSendAsync(message);
         }
     }
 }

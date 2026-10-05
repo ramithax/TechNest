@@ -55,6 +55,7 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.3" />
+    <PackageReference Include="Resend" Version="0.22.0" />
     <PackageReference Include="Scalar.AspNetCore" Version="2.16.20" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="10.2.3" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.22.0" />
