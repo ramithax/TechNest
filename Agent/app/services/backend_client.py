@@ -9,44 +9,70 @@ class BackendClient:
 
     async def get_products(self):
         """
-        Get products from the TechNest Product API.
+        Get all products from the TechNest Product API.
+        Handles pagination automatically.
         """
-        url = f"{self.base_url}/api/Product"
 
-        print(f"[BACKEND] GET {url}")
+        all_products = []
+        page = 1
+        page_size = 50
 
-        async with httpx.AsyncClient(
-            timeout=30.0
-        ) as client:
-            response = await client.get(
-                url,
-                params={
-                    "page": 1,
-                    "pageSize": 50
-                }
-            )
+        async with httpx.AsyncClient(timeout=30.0) as client:
 
-            print(
-                f"[BACKEND] Status: {response.status_code}"
-            )
+            while True:
+                url = f"{self.base_url}/api/Product"
 
-            print(
-                f"[BACKEND] Response: {response.text}"
-            )
+                print(
+                    f"[BACKEND] GET {url} "
+                    f"(page={page}, pageSize={page_size})"
+                )
 
-            response.raise_for_status()
+                response = await client.get(
+                    url,
+                    params={
+                        "page": page,
+                        "pageSize": page_size
+                    }
+                )
 
-            data = response.json()
+                print(
+                    f"[BACKEND] Status: {response.status_code}"
+                )
 
-            return data.get("items", [])
+                response.raise_for_status()
 
-    async def get_product(
-        self,
-        product_id: int
-    ):
+                data = response.json()
+
+                items = data.get("items", [])
+
+                print(
+                    f"[BACKEND] Received {len(items)} products"
+                )
+
+                all_products.extend(items)
+
+                has_next_page = data.get(
+                    "hasNextPage",
+                    False
+                )
+
+                if not has_next_page:
+                    break
+
+                page += 1
+
+        print(
+            f"[BACKEND] Total products loaded: "
+            f"{len(all_products)}"
+        )
+
+        return all_products
+
+    async def get_product(self, product_id: int):
         """
         Get one product by ID from the TechNest Product API.
         """
+
         if product_id <= 0:
             raise ValueError(
                 "Product ID must be greater than zero."
@@ -59,17 +85,18 @@ class BackendClient:
 
         print(f"[BACKEND] GET {url}")
 
-        async with httpx.AsyncClient(
-            timeout=30.0
-        ) as client:
+        async with httpx.AsyncClient(timeout=30.0) as client:
+
             response = await client.get(url)
 
             print(
-                f"[BACKEND] Status: {response.status_code}"
+                f"[BACKEND] Status: "
+                f"{response.status_code}"
             )
 
             print(
-                f"[BACKEND] Response: {response.text}"
+                f"[BACKEND] Response: "
+                f"{response.text}"
             )
 
             response.raise_for_status()

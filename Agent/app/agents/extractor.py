@@ -46,34 +46,39 @@ IMPORTANT RULES:
 
 Examples:
 
-- "120W" -> 120
-- "320mm" -> 320
-- "32GB" -> 32
-- "6000MHz" -> 6000
+"120W" -> 120
+"320mm" -> 320
+"32GB" -> 32
+"6000MHz" -> 6000
 
 8. Preserve technical names such as:
 
-- AM5
-- AM4
-- LGA1700
-- LGA1200
-- DDR5
-- DDR4
-- M.2 NVMe
-- PCIe 3.0
-- PCIe 4.0
-- PCIe 5.0
+AM5
+AM4
+LGA1700
+LGA1200
+DDR5
+DDR4
+M.2 NVMe
+PCIe 3.0
+PCIe 4.0
+PCIe 5.0
 
 9. Do not create specifications that are not present
    in the description.
 
 10. Do not use outside knowledge to fill missing values.
 
-11. Return ONLY the structured JSON object.
+11. Return ONLY valid JSON.
 
-12. Do not include explanations before or after the JSON.
+12. Do NOT use markdown.
 
-The JSON must follow these exact output instructions:
+13. Do NOT wrap the JSON in ```json or ```.
+
+14. Do NOT write explanations before or after the JSON.
+
+15. The JSON must follow the exact schema provided
+   in the format instructions.
 
 {format_instructions}
 """
@@ -92,6 +97,8 @@ Product name:
 Product description:
 
 {description}
+
+Return ONLY the JSON object.
 """
                 )
             ]
@@ -106,7 +113,7 @@ Product description:
         description: str
     ) -> ProductSpecifications:
 
-        return await self.chain.ainvoke(
+        result = await self.chain.ainvoke(
             {
                 "category": category,
                 "name": name,
@@ -116,3 +123,5 @@ Product description:
                 )
             }
         )
+
+        return result
