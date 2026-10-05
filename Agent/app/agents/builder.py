@@ -1,5 +1,3 @@
-from itertools import product as cartesian_product
-
 from app.graph.state import AgentState
 from app.tools.product_tools import (
     ProductSearchTool,
@@ -9,6 +7,7 @@ from app.tools.product_tools import (
 
 
 class BuildAgent:
+
     BASE_CATEGORIES = [
         "Processor",
         "Motherboard",
@@ -42,6 +41,7 @@ class BuildAgent:
         self,
         state: AgentState
     ) -> AgentState:
+
         try:
             analysis = state.get(
                 "analysis",
@@ -66,8 +66,10 @@ class BuildAgent:
                     "[BUILD AGENT] Loading products from backend..."
                 )
 
-                product_result = await self.product_search_tool.execute(
-                    ProductSearchInput()
+                product_result = (
+                    await self.product_search_tool.execute(
+                        ProductSearchInput()
+                    )
                 )
 
                 if not product_result.success:
@@ -98,7 +100,6 @@ class BuildAgent:
                     reason="NO_PRODUCTS"
                 )
 
-            # Save catalogue into LangGraph state
             state = {
                 **state,
                 "catalogue": catalogue
@@ -178,6 +179,7 @@ class BuildAgent:
             }
 
             for product in catalogue:
+
                 category = self._normalize_category(
                     product.get(
                         "category",
@@ -221,6 +223,7 @@ class BuildAgent:
             candidates = {}
 
             for category in self.ALL_CATEGORIES:
+
                 category_products = (
                     products_by_category[
                         category
@@ -229,12 +232,7 @@ class BuildAgent:
 
                 category_products = sorted(
                     category_products,
-                    key=lambda p: float(
-                        p.get(
-                            "actualPrice",
-                            0
-                        )
-                    )
+                    key=self._get_price
                 )
 
                 if category in [
@@ -282,7 +280,11 @@ class BuildAgent:
             ]
 
             if missing_catalogue_categories:
-                if len(missing_catalogue_categories) == 1:
+
+                if len(
+                    missing_catalogue_categories
+                ) == 1:
+
                     message = (
                         "I couldn't create this PC build because "
                         "the required component "
@@ -291,7 +293,9 @@ class BuildAgent:
                         "Please try again later or adjust "
                         "your requirements."
                     )
+
                 else:
+
                     message = (
                         "I couldn't create this PC build because "
                         "the required components "
@@ -324,12 +328,15 @@ class BuildAgent:
             # CHEAPEST POSSIBLE BUILD CHECK
             # =========================================================
 
-            cheapest_total = self._get_cheapest_build_total(
-                candidates,
-                required_categories
+            cheapest_total = (
+                self._get_cheapest_build_total(
+                    candidates,
+                    required_categories
+                )
             )
 
             if cheapest_total is not None:
+
                 print(
                     "[BUILD AGENT] Cheapest possible "
                     "required build: "
@@ -337,10 +344,13 @@ class BuildAgent:
                 )
 
                 if cheapest_total > budget:
-                    message = self._get_budget_failure_message(
-                        budget=budget,
-                        cheapest_total=cheapest_total,
-                        requirements=requirements
+
+                    message = (
+                        self._get_budget_failure_message(
+                            budget=budget,
+                            cheapest_total=cheapest_total,
+                            requirements=requirements
+                        )
                     )
 
                     print(
@@ -400,6 +410,7 @@ class BuildAgent:
             catalogue_by_id = {}
 
             for product_item in catalogue:
+
                 try:
                     product_id = int(
                         product_item.get(
@@ -417,6 +428,7 @@ class BuildAgent:
                 ] = product_item
 
             for item in selected_products:
+
                 try:
                     product_id = int(
                         item.get(
@@ -449,11 +461,8 @@ class BuildAgent:
                     )
                 )
 
-                unit_price = float(
-                    product.get(
-                        "actualPrice",
-                        0
-                    )
+                unit_price = self._get_price(
+                    product
                 )
 
                 selected_ids.add(
@@ -505,6 +514,7 @@ class BuildAgent:
             # =========================================================
 
             if not selected_summaries:
+
                 print(
                     "[BUILD AGENT WARNING] "
                     "LLM did not return a valid build."
@@ -521,6 +531,7 @@ class BuildAgent:
                 )
 
                 if fallback is None:
+
                     message = (
                         "I couldn't create a suitable PC build "
                         "using the components currently in stock. "
@@ -549,6 +560,7 @@ class BuildAgent:
             # =========================================================
 
             if total_amount > budget:
+
                 print(
                     "[BUILD AGENT WARNING] "
                     "LLM build exceeds budget."
@@ -566,10 +578,13 @@ class BuildAgent:
                 )
 
                 if fallback is None:
-                    message = self._get_budget_failure_message(
-                        budget=budget,
-                        cheapest_total=cheapest_total,
-                        requirements=requirements
+
+                    message = (
+                        self._get_budget_failure_message(
+                            budget=budget,
+                            cheapest_total=cheapest_total,
+                            requirements=requirements
+                        )
                     )
 
                     print(
@@ -635,6 +650,7 @@ class BuildAgent:
             # =========================================================
 
             if missing_final_categories:
+
                 print(
                     "[BUILD AGENT WARNING] "
                     "LLM build is missing required categories:",
@@ -653,6 +669,7 @@ class BuildAgent:
                 )
 
                 if fallback is None:
+
                     message = (
                         "I couldn't create a complete PC build "
                         "because a suitable combination of the "
@@ -686,10 +703,13 @@ class BuildAgent:
             # =========================================================
 
             if total_amount > budget:
-                message = self._get_budget_failure_message(
-                    budget=budget,
-                    cheapest_total=cheapest_total,
-                    requirements=requirements
+
+                message = (
+                    self._get_budget_failure_message(
+                        budget=budget,
+                        cheapest_total=cheapest_total,
+                        requirements=requirements
+                    )
                 )
 
                 print(
@@ -725,6 +745,7 @@ class BuildAgent:
             ]
 
             if missing_final_categories:
+
                 message = (
                     "I couldn't create a complete PC build "
                     "because the following required components "
@@ -750,7 +771,10 @@ class BuildAgent:
 
             build = {
                 "products": selected_summaries,
-                "total_amount": total_amount,
+                "total_amount": round(
+                    total_amount,
+                    2
+                ),
                 "budget": budget,
                 "required_categories": required_final_categories,
                 "requirements": requirements
@@ -758,6 +782,11 @@ class BuildAgent:
 
             print(
                 "[BUILD AGENT] Build created successfully."
+            )
+
+            print(
+                "[BUILD AGENT] Final total: "
+                f"Rs. {total_amount:,.2f}"
             )
 
             completed_steps = [
@@ -785,6 +814,7 @@ class BuildAgent:
             }
 
         except Exception as ex:
+
             print(
                 f"[BUILD AGENT ERROR] {str(ex)}"
             )
@@ -817,6 +847,7 @@ class BuildAgent:
         required_categories=None,
         cheapest_total=None
     ):
+
         print(
             "[BUILD AGENT] Build unavailable."
         )
@@ -859,8 +890,11 @@ class BuildAgent:
         cheapest_total,
         requirements
     ):
+
         if cheapest_total is not None:
+
             if requirements.get("gaming"):
+
                 return (
                     f"We couldn't create a suitable gaming "
                     f"PC within your Rs. {budget:,.0f} budget "
@@ -873,6 +907,7 @@ class BuildAgent:
                 )
 
             if requirements.get("ai_ml"):
+
                 return (
                     f"We couldn't create a suitable AI/ML "
                     f"PC within your Rs. {budget:,.0f} budget "
@@ -884,6 +919,7 @@ class BuildAgent:
                 )
 
             if requirements.get("heavy_work"):
+
                 return (
                     f"We couldn't create a suitable PC for "
                     f"your workload within your Rs. "
@@ -922,9 +958,11 @@ class BuildAgent:
         candidates,
         required_categories
     ):
+
         total = 0.0
 
         for category in required_categories:
+
             options = candidates.get(
                 category,
                 []
@@ -935,19 +973,11 @@ class BuildAgent:
 
             cheapest = min(
                 options,
-                key=lambda product: float(
-                    product.get(
-                        "actualPrice",
-                        0
-                    )
-                )
+                key=self._get_price
             )
 
-            total += float(
-                cheapest.get(
-                    "actualPrice",
-                    0
-                )
+            total += self._get_price(
+                cheapest
             )
 
         return round(
@@ -964,10 +994,12 @@ class BuildAgent:
         fallback,
         catalogue_by_id
     ):
+
         selected_summaries = []
         total_amount = 0.0
 
         for item in fallback.products:
+
             product_id = int(
                 item.product_id
             )
@@ -982,11 +1014,8 @@ class BuildAgent:
                     f"{product_id} not found."
                 )
 
-            unit_price = float(
-                product.get(
-                    "actualPrice",
-                    0
-                )
+            unit_price = self._get_price(
+                product
             )
 
             total_amount += unit_price
@@ -1027,6 +1056,7 @@ class BuildAgent:
         self,
         analysis
     ):
+
         text = " ".join([
             str(
                 analysis.get(
@@ -1153,6 +1183,7 @@ class BuildAgent:
         self,
         category
     ):
+
         if not category:
             return ""
 
@@ -1163,24 +1194,32 @@ class BuildAgent:
         mappings = {
             "cpu": "Processor",
             "processor": "Processor",
+
             "motherboard": "Motherboard",
             "mainboard": "Motherboard",
+
             "ram": "RAM",
             "memory": "RAM",
+
             "gpu": "GPU",
             "graphics card": "GPU",
             "graphics": "GPU",
             "video card": "GPU",
+
             "storage": "Storage",
             "ssd": "Storage",
             "hdd": "Storage",
+
             "psu": "PSU",
             "power supply": "PSU",
             "power supply unit": "PSU",
+
             "case": "Case",
             "computer case": "Case",
+
             "cooler": "Cooler",
             "cpu cooler": "Cooler",
+            "cpu-cooler": "Cooler",
             "cooling": "Cooler"
         }
 
@@ -1200,12 +1239,13 @@ class BuildAgent:
         budget,
         required_categories
     ):
-        """
-        Keep your existing LLM implementation here.
 
-        This placeholder returns an empty list, which means
-        the deterministic compatibility-aware fallback will
-        select the build.
+        """
+        The deterministic builder is currently responsible
+        for selecting the final compatible build.
+
+        This keeps the workflow reliable while the LLM
+        selection layer is being developed.
         """
 
         return []
@@ -1220,6 +1260,7 @@ class BuildAgent:
         analysis,
         budget
     ):
+
         requirements = self._get_build_requirements(
             analysis
         )
@@ -1245,106 +1286,365 @@ class BuildAgent:
         )
 
         # =========================================================
-        # CHEAPEST BUILD QUICK CHECK
+        # GET CATEGORY OPTIONS
         # =========================================================
 
-        cheapest_total = self._get_cheapest_build_total(
-            candidates,
-            required_categories
+        processors = candidates.get(
+            "Processor",
+            []
         )
 
-        if (
-            cheapest_total is not None
-            and cheapest_total > budget
-        ):
-            print(
-                "[BUILD AGENT] Deterministic fallback "
-                "skipped because even the cheapest "
-                "required build exceeds the budget."
-            )
+        motherboards = candidates.get(
+            "Motherboard",
+            []
+        )
 
-            print(
-                "[BUILD AGENT] Cheapest required build: "
-                f"Rs. {cheapest_total:,.2f}"
-            )
+        rams = candidates.get(
+            "RAM",
+            []
+        )
 
-            print(
-                "[BUILD AGENT] Budget: "
-                f"Rs. {budget:,.2f}"
-            )
+        storages = candidates.get(
+            "Storage",
+            []
+        )
 
+        psus = candidates.get(
+            "PSU",
+            []
+        )
+
+        cases = candidates.get(
+            "Case",
+            []
+        )
+
+        gpus = candidates.get(
+            "GPU",
+            []
+        )
+
+        coolers = candidates.get(
+            "Cooler",
+            []
+        )
+
+        if not processors:
+            print(
+                "[BUILD AGENT] No Processor candidates."
+            )
             return None
 
-        category_options = []
-
-        for category in required_categories:
-            options = candidates.get(
-                category,
-                []
+        if not motherboards:
+            print(
+                "[BUILD AGENT] No Motherboard candidates."
             )
+            return None
 
-            if not options:
-                print(
-                    "[BUILD AGENT] No candidates for:",
-                    category
-                )
-
-                return None
-
-            category_options.append(
-                options
+        if not rams:
+            print(
+                "[BUILD AGENT] No RAM candidates."
             )
+            return None
+
+        if not storages:
+            print(
+                "[BUILD AGENT] No Storage candidates."
+            )
+            return None
+
+        if not psus:
+            print(
+                "[BUILD AGENT] No PSU candidates."
+            )
+            return None
+
+        if not cases:
+            print(
+                "[BUILD AGENT] No Case candidates."
+            )
+            return None
+
+        if (
+            requirements["gpu_required"]
+            and not gpus
+        ):
+            print(
+                "[BUILD AGENT] No GPU candidates."
+            )
+            return None
+
+        if (
+            requirements["cooler_required"]
+            and not coolers
+        ):
+            print(
+                "[BUILD AGENT] No Cooler candidates."
+            )
+            return None
+
+        # =========================================================
+        # SORT BY PRICE
+        # =========================================================
+
+        processors = sorted(
+            processors,
+            key=self._get_price
+        )
+
+        motherboards = sorted(
+            motherboards,
+            key=self._get_price
+        )
+
+        rams = sorted(
+            rams,
+            key=self._get_price
+        )
+
+        storages = sorted(
+            storages,
+            key=self._get_price
+        )
+
+        psus = sorted(
+            psus,
+            key=self._get_price
+        )
+
+        cases = sorted(
+            cases,
+            key=self._get_price
+        )
+
+        gpus = sorted(
+            gpus,
+            key=self._get_price
+        )
+
+        coolers = sorted(
+            coolers,
+            key=self._get_price
+        )
+
+        # =========================================================
+        # CHEAPEST NON-COMPATIBILITY COMPONENTS
+        # =========================================================
+
+        cheapest_storage = storages[0]
+        cheapest_case = cases[0]
+
+        cheapest_cooler = (
+            coolers[0]
+            if requirements["cooler_required"]
+            else None
+        )
+
+        # =========================================================
+        # SEARCH
+        # =========================================================
+
+        best_build = None
+        best_score = float("-inf")
+        best_total = float("inf")
 
         checked = 0
         rejected_incompatible = 0
+        budget_rejected = 0
 
-        best_build = None
-        best_score = float(
-            "-inf"
-        )
+        if requirements["gpu_required"]:
+            gpu_options = gpus
+        else:
+            gpu_options = [None]
 
-        max_combinations = 250000
+        for processor in processors:
 
-        for combination in cartesian_product(
-            *category_options
-        ):
-            checked += 1
+            processor_price = self._get_price(
+                processor
+            )
 
-            if checked > max_combinations:
-                break
+            for motherboard in motherboards:
 
-            total = sum(
-                float(
-                    product_item.get(
-                        "actualPrice",
-                        0
+                motherboard_price = (
+                    self._get_price(
+                        motherboard
                     )
                 )
-                for product_item in combination
-            )
 
-            if total > budget:
-                continue
+                # -------------------------------------------------
+                # CPU / MOTHERBOARD
+                # -------------------------------------------------
 
-            if not self._is_compatible(
-                combination
-            ):
-                rejected_incompatible += 1
-                continue
+                if not self._is_cpu_motherboard_compatible(
+                    processor,
+                    motherboard
+                ):
+                    rejected_incompatible += 1
+                    continue
 
-            score = self._score_build(
-                combination,
-                analysis,
-                budget
-            )
+                cpu_motherboard_total = (
+                    processor_price
+                    + motherboard_price
+                )
 
-            if score > best_score:
-                best_score = score
-                best_build = combination
+                if cpu_motherboard_total > budget:
+                    budget_rejected += 1
+                    continue
+
+                for ram in rams:
+
+                    ram_price = self._get_price(
+                        ram
+                    )
+
+                    # -------------------------------------------------
+                    # RAM / MOTHERBOARD
+                    # -------------------------------------------------
+
+                    if not self._is_ram_motherboard_compatible(
+                        ram,
+                        motherboard
+                    ):
+                        rejected_incompatible += 1
+                        continue
+
+                    cpu_mobo_ram_total = (
+                        cpu_motherboard_total
+                        + ram_price
+                    )
+
+                    if cpu_mobo_ram_total > budget:
+                        budget_rejected += 1
+                        continue
+
+                    for gpu in gpu_options:
+
+                        gpu_price = (
+                            self._get_price(gpu)
+                            if gpu is not None
+                            else 0
+                        )
+
+                        current_total = (
+                            cpu_mobo_ram_total
+                            + gpu_price
+                        )
+
+                        if current_total > budget:
+                            budget_rejected += 1
+                            continue
+
+                        for psu in psus:
+
+                            checked += 1
+
+                            psu_price = self._get_price(
+                                psu
+                            )
+
+                            # -------------------------------------------------
+                            # GPU / PSU
+                            # -------------------------------------------------
+
+                            if gpu is not None:
+
+                                if not self._is_gpu_psu_compatible(
+                                    gpu,
+                                    psu
+                                ):
+                                    rejected_incompatible += 1
+                                    continue
+
+                            # -------------------------------------------------
+                            # ADD CHEAPEST STORAGE / CASE / COOLER
+                            # -------------------------------------------------
+
+                            partial_total = (
+                                current_total
+                                + psu_price
+                                + self._get_price(
+                                    cheapest_storage
+                                )
+                                + self._get_price(
+                                    cheapest_case
+                                )
+                            )
+
+                            if cheapest_cooler is not None:
+                                partial_total += (
+                                    self._get_price(
+                                        cheapest_cooler
+                                    )
+                                )
+
+                            if partial_total > budget:
+                                budget_rejected += 1
+                                continue
+
+                            # -------------------------------------------------
+                            # CREATE COMBINATION
+                            # -------------------------------------------------
+
+                            combination = [
+                                processor,
+                                motherboard,
+                                ram,
+                                cheapest_storage,
+                                psu,
+                                cheapest_case
+                            ]
+
+                            if gpu is not None:
+                                combination.append(
+                                    gpu
+                                )
+
+                            if cheapest_cooler is not None:
+                                combination.append(
+                                    cheapest_cooler
+                                )
+
+                            # -------------------------------------------------
+                            # FINAL COMPATIBILITY
+                            # -------------------------------------------------
+
+                            if not self._is_compatible(
+                                combination
+                            ):
+                                rejected_incompatible += 1
+                                continue
+
+                            total = sum(
+                                self._get_price(
+                                    item
+                                )
+                                for item in combination
+                            )
+
+                            if total > budget:
+                                budget_rejected += 1
+                                continue
+
+                            score = self._score_build(
+                                combination,
+                                analysis,
+                                budget
+                            )
+
+                            if (
+                                score > best_score
+                                or (
+                                    score == best_score
+                                    and total > best_total
+                                )
+                            ):
+                                best_score = score
+                                best_total = total
+                                best_build = combination
 
         print(
-            "[BUILD AGENT] Checked "
-            f"{checked} combinations."
+            "[BUILD AGENT] Checked compatible core "
+            f"combinations: {checked}"
         )
 
         print(
@@ -1352,7 +1652,13 @@ class BuildAgent:
             f"combinations: {rejected_incompatible}"
         )
 
+        print(
+            "[BUILD AGENT] Rejected over-budget "
+            f"combinations: {budget_rejected}"
+        )
+
         if best_build is None:
+
             print(
                 "[BUILD AGENT] No feasible compatible "
                 "deterministic combination found."
@@ -1365,7 +1671,27 @@ class BuildAgent:
             "build selected."
         )
 
+        print(
+            "[BUILD AGENT] Deterministic build total: "
+            f"Rs. {best_total:,.2f}"
+        )
+
+        print(
+            "[BUILD AGENT] Deterministic build products:"
+        )
+
+        for product_item in best_build:
+
+            print(
+                "  - "
+                f"{product_item.get('name', '')} "
+                f"(ID: {product_item.get('id')}) "
+                f"[{self._normalize_category(product_item.get('category'))}] "
+                f"Rs. {self._get_price(product_item):,.2f}"
+            )
+
         class FallbackItem:
+
             def __init__(
                 self,
                 product_id,
@@ -1377,6 +1703,7 @@ class BuildAgent:
                 self.reason = reason
 
         class FallbackResult:
+
             def __init__(
                 self,
                 products
@@ -1386,6 +1713,7 @@ class BuildAgent:
         fallback_products = []
 
         for product_item in best_build:
+
             fallback_products.append(
                 FallbackItem(
                     product_id=int(
@@ -1418,9 +1746,11 @@ class BuildAgent:
         self,
         products
     ):
+
         product_by_category = {}
 
         for product_item in products:
+
             category = self._normalize_category(
                 product_item.get(
                     "category",
@@ -1453,69 +1783,17 @@ class BuildAgent:
         )
 
         # =========================================================
-        # PROCESSOR / MOTHERBOARD
+        # CPU / MOTHERBOARD
         # =========================================================
 
-        if processor and motherboard:
-            processor_text = " ".join([
-                str(
-                    processor.get(
-                        "name",
-                        ""
-                    )
-                ),
-                str(
-                    processor.get(
-                        "description",
-                        ""
-                    )
-                )
-            ]).lower()
+        if (
+            processor
+            and motherboard
+        ):
 
-            motherboard_text = " ".join([
-                str(
-                    motherboard.get(
-                        "name",
-                        ""
-                    )
-                ),
-                str(
-                    motherboard.get(
-                        "description",
-                        ""
-                    )
-                )
-            ]).lower()
-
-            processor_socket = self._extract_socket(
-                processor_text
-            )
-
-            motherboard_socket = self._extract_socket(
-                motherboard_text
-            )
-
-            if (
-                processor_socket
-                and motherboard_socket
-                and processor_socket
-                != motherboard_socket
-            ):
-                return False
-
-            if (
-                "ryzen" in processor_text
-                and "am5" in processor_text
-                and "am4" in motherboard_text
-                and "am5" not in motherboard_text
-            ):
-                return False
-
-            if (
-                "ryzen" in processor_text
-                and "am4" in processor_text
-                and "am5" in motherboard_text
-                and "am4" not in motherboard_text
+            if not self._is_cpu_motherboard_compatible(
+                processor,
+                motherboard
             ):
                 return False
 
@@ -1523,49 +1801,14 @@ class BuildAgent:
         # RAM / MOTHERBOARD
         # =========================================================
 
-        if ram and motherboard:
-            ram_text = " ".join([
-                str(
-                    ram.get(
-                        "name",
-                        ""
-                    )
-                ),
-                str(
-                    ram.get(
-                        "description",
-                        ""
-                    )
-                )
-            ]).lower()
+        if (
+            ram
+            and motherboard
+        ):
 
-            motherboard_text = " ".join([
-                str(
-                    motherboard.get(
-                        "name",
-                        ""
-                    )
-                ),
-                str(
-                    motherboard.get(
-                        "description",
-                        ""
-                    )
-                )
-            ]).lower()
-
-            ram_ddr = self._extract_ddr(
-                ram_text
-            )
-
-            motherboard_ddr = self._extract_ddr(
-                motherboard_text
-            )
-
-            if (
-                ram_ddr
-                and motherboard_ddr
-                and ram_ddr != motherboard_ddr
+            if not self._is_ram_motherboard_compatible(
+                ram,
+                motherboard
             ):
                 return False
 
@@ -1573,53 +1816,196 @@ class BuildAgent:
         # GPU / PSU
         # =========================================================
 
-        if gpu and psu:
-            gpu_text = " ".join([
-                str(
-                    gpu.get(
-                        "name",
-                        ""
-                    )
-                ),
-                str(
-                    gpu.get(
-                        "description",
-                        ""
-                    )
-                )
-            ]).lower()
+        if (
+            gpu
+            and psu
+        ):
 
-            psu_text = " ".join([
-                str(
-                    psu.get(
-                        "name",
-                        ""
-                    )
-                ),
-                str(
-                    psu.get(
-                        "description",
-                        ""
-                    )
-                )
-            ]).lower()
-
-            gpu_power = self._extract_wattage(
-                gpu_text
-            )
-
-            psu_power = self._extract_wattage(
-                psu_text
-            )
-
-            if (
-                gpu_power
-                and psu_power
-                and psu_power < gpu_power
+            if not self._is_gpu_psu_compatible(
+                gpu,
+                psu
             ):
                 return False
 
         return True
+
+    # =============================================================
+    # CPU / MOTHERBOARD COMPATIBILITY
+    # =============================================================
+
+    def _is_cpu_motherboard_compatible(
+        self,
+        processor,
+        motherboard
+    ):
+
+        processor_text = " ".join([
+            str(
+                processor.get(
+                    "name",
+                    ""
+                )
+            ),
+            str(
+                processor.get(
+                    "description",
+                    ""
+                )
+            )
+        ]).lower()
+
+        motherboard_text = " ".join([
+            str(
+                motherboard.get(
+                    "name",
+                    ""
+                )
+            ),
+            str(
+                motherboard.get(
+                    "description",
+                    ""
+                )
+            )
+        ]).lower()
+
+        processor_socket = (
+            self._extract_socket(
+                processor_text
+            )
+        )
+
+        motherboard_socket = (
+            self._extract_socket(
+                motherboard_text
+            )
+        )
+
+        # If both sockets are explicitly known,
+        # they must match.
+        if (
+            processor_socket
+            and motherboard_socket
+            and processor_socket != motherboard_socket
+        ):
+            return False
+
+        return True
+
+    # =============================================================
+    # RAM / MOTHERBOARD COMPATIBILITY
+    # =============================================================
+
+    def _is_ram_motherboard_compatible(
+        self,
+        ram,
+        motherboard
+    ):
+
+        ram_text = " ".join([
+            str(
+                ram.get(
+                    "name",
+                    ""
+                )
+            ),
+            str(
+                ram.get(
+                    "description",
+                    ""
+                )
+            )
+        ]).lower()
+
+        motherboard_text = " ".join([
+            str(
+                motherboard.get(
+                    "name",
+                    ""
+                )
+            ),
+            str(
+                motherboard.get(
+                    "description",
+                    ""
+                )
+            )
+        ]).lower()
+
+        ram_ddr = self._extract_ddr(
+            ram_text
+        )
+
+        motherboard_ddr = self._extract_ddr(
+            motherboard_text
+        )
+
+        if (
+            ram_ddr
+            and motherboard_ddr
+            and ram_ddr != motherboard_ddr
+        ):
+            return False
+
+        return True
+
+    # =============================================================
+    # GPU / PSU COMPATIBILITY
+    # =============================================================
+
+    def _is_gpu_psu_compatible(
+        self,
+        gpu,
+        psu
+    ):
+
+        gpu_text = " ".join([
+            str(
+                gpu.get(
+                    "name",
+                    ""
+                )
+            ),
+            str(
+                gpu.get(
+                    "description",
+                    ""
+                )
+            )
+        ]).lower()
+
+        psu_text = " ".join([
+            str(
+                psu.get(
+                    "name",
+                    ""
+                )
+            ),
+            str(
+                psu.get(
+                    "description",
+                    ""
+                )
+            )
+        ]).lower()
+
+        gpu_power = self._extract_gpu_power(
+            gpu_text
+        )
+
+        psu_power = self._extract_psu_wattage(
+            psu_text
+        )
+
+        # If either value is not explicitly available,
+        # do not reject the combination.
+        if (
+            gpu_power is None
+            or psu_power is None
+        ):
+            return True
+
+        return psu_power >= gpu_power
 
     # =============================================================
     # SOCKET EXTRACTION
@@ -1629,6 +2015,7 @@ class BuildAgent:
         self,
         text
     ):
+
         sockets = [
             "lga1851",
             "lga1700",
@@ -1643,6 +2030,7 @@ class BuildAgent:
         text = text.lower()
 
         for socket in sockets:
+
             if socket in text:
                 return socket
 
@@ -1656,6 +2044,7 @@ class BuildAgent:
         self,
         text
     ):
+
         text = text.lower()
 
         for ddr in [
@@ -1663,39 +2052,118 @@ class BuildAgent:
             "ddr4",
             "ddr3"
         ]:
+
             if ddr in text:
                 return ddr
 
         return None
 
     # =============================================================
-    # WATTAGE EXTRACTION
+    # GPU POWER EXTRACTION
     # =============================================================
 
-    def _extract_wattage(
+    def _extract_gpu_power(
         self,
         text
     ):
+
         import re
 
+        text = text.lower()
+
+        patterns = [
+            r"recommended\s+psu\s*[:\-]?\s*(\d{3,4})\s*w",
+            r"minimum\s+psu\s*[:\-]?\s*(\d{3,4})\s*w",
+            r"psu\s*[:\-]?\s*(\d{3,4})\s*w",
+            r"power\s+requirement\s*[:\-]?\s*(\d{3,4})\s*w",
+            r"tdp\s*[:\-]?\s*(\d{2,4})\s*w"
+        ]
+
+        for pattern in patterns:
+
+            match = re.search(
+                pattern,
+                text
+            )
+
+            if match:
+
+                try:
+                    return int(
+                        match.group(1)
+                    )
+                except (
+                    TypeError,
+                    ValueError
+                ):
+                    pass
+
+        return None
+
+    # =============================================================
+    # PSU WATTAGE EXTRACTION
+    # =============================================================
+
+    def _extract_psu_wattage(
+        self,
+        text
+    ):
+
+        import re
+
+        text = text.lower()
+
         matches = re.findall(
-            r"(\d{3,4})\s*w\b",
-            text.lower()
+            r"(\d{3,4})\s*w",
+            text
         )
 
         if not matches:
             return None
 
         try:
-            return max(
+
+            values = [
                 int(value)
                 for value in matches
+            ]
+
+            return max(
+                values
             )
+
         except (
             TypeError,
             ValueError
         ):
             return None
+
+    # =============================================================
+    # GENERIC PRICE HELPER
+    # =============================================================
+
+    def _get_price(
+        self,
+        product
+    ):
+
+        try:
+
+            return float(
+                product.get(
+                    "actualPrice",
+                    0
+                )
+            )
+
+        except (
+            TypeError,
+            ValueError
+        ):
+
+            return float(
+                "inf"
+            )
 
     # =============================================================
     # BUILD SCORING
@@ -1707,16 +2175,14 @@ class BuildAgent:
         analysis,
         budget
     ):
+
         requirements = self._get_build_requirements(
             analysis
         )
 
         total = sum(
-            float(
-                product_item.get(
-                    "actualPrice",
-                    0
-                )
+            self._get_price(
+                product_item
             )
             for product_item in products
         )
@@ -1746,16 +2212,17 @@ class BuildAgent:
         # Gaming
         # ---------------------------------------------------------
 
-        if requirements["gaming"]:
-            categories = {
-                self._normalize_category(
-                    product_item.get(
-                        "category",
-                        ""
-                    )
+        categories = {
+            self._normalize_category(
+                product_item.get(
+                    "category",
+                    ""
                 )
-                for product_item in products
-            }
+            )
+            for product_item in products
+        }
+
+        if requirements["gaming"]:
 
             if "GPU" in categories:
                 score += 50
@@ -1765,15 +2232,6 @@ class BuildAgent:
         # ---------------------------------------------------------
 
         if requirements["ai_ml"]:
-            categories = {
-                self._normalize_category(
-                    product_item.get(
-                        "category",
-                        ""
-                    )
-                )
-                for product_item in products
-            }
 
             if "GPU" in categories:
                 score += 60
@@ -1783,15 +2241,6 @@ class BuildAgent:
         # ---------------------------------------------------------
 
         if requirements["heavy_work"]:
-            categories = {
-                self._normalize_category(
-                    product_item.get(
-                        "category",
-                        ""
-                    )
-                )
-                for product_item in products
-            }
 
             if "GPU" in categories:
                 score += 30
@@ -1804,15 +2253,6 @@ class BuildAgent:
         # ---------------------------------------------------------
 
         if requirements["lightweight"]:
-            categories = {
-                self._normalize_category(
-                    product_item.get(
-                        "category",
-                        ""
-                    )
-                )
-                for product_item in products
-            }
 
             if "GPU" not in categories:
                 score += 15
