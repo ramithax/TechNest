@@ -421,7 +421,7 @@ public async Task<TokenResponseDto?> UpdateProfile(
 
             await context.SaveChangesAsync();
 
-            return new TokenResponseDtoa
+            return new TokenResponseDto
             {
                 AccessToken = CreateToken(user),
                 RefreshToken = await GenerateAndSaveRefreshToken(user)
