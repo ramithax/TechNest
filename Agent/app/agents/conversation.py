@@ -1,4 +1,5 @@
 from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.output_parsers import PydanticOutputParser
 
 from app.graph.state import AgentState
 from app.models.conversation import ConversationResponse
@@ -9,8 +10,8 @@ class ConversationAgent:
     def __init__(self):
         self.llm = LLMService().get_llm()
 
-        self.structured_llm = self.llm.with_structured_output(
-            ConversationResponse
+        self.parser = PydanticOutputParser(
+            pydantic_object=ConversationResponse
         )
 
         self.prompt = ChatPromptTemplate.from_messages(
@@ -33,36 +34,22 @@ available to start the PC building workflow.
 IMPORTANT:
 
 1. Be conversational and friendly.
-
 2. Do not ask unnecessary questions.
-
 3. Do not ask for information that the customer already provided.
-
 4. Never invent customer requirements.
-
 5. Do not recommend specific products.
-
 6. Do not claim that components are compatible.
-
 7. Ask one useful question at a time when information is missing.
-
 8. A budget is strongly preferred for a build.
-
 9. The intended use of the PC is required.
-
 10. Determine performance expectations from the customer's
     explicit requirements.
-
 11. Special requirements should only contain requirements
     explicitly provided by the customer.
-
 12. If the customer has already provided enough information,
     set ready_to_build to true.
-
 13. If information is missing, set ready_to_build to false.
-
 14. When asking a question, keep the response concise.
-
 15. Do not ask for exact hardware components.
 
 Examples:
@@ -97,9 +84,15 @@ ready_to_build:
 true
 
 IMPORTANT:
+
 Do not require every possible detail. If the customer has
 clearly provided a use case and budget, the build workflow
 can begin.
+
+You MUST return the result in the exact JSON format required
+by the output instructions below.
+
+{format_instructions}
 """
                 ),
                 (
@@ -115,7 +108,7 @@ Determine the next conversational response.
             ]
         )
 
-        self.chain = self.prompt | self.structured_llm
+        self.chain = self.prompt | self.llm | self.parser
 
     async def run(self, state: AgentState) -> AgentState:
         conversation = state.get(
@@ -125,7 +118,8 @@ Determine the next conversational response.
 
         result: ConversationResponse = await self.chain.ainvoke(
             {
-                "conversation": conversation
+                "conversation": conversation,
+                "format_instructions": self.parser.get_format_instructions(),
             }
         )
 
