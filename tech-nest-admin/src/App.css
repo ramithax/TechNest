@@ -3,6 +3,11 @@
 @import "shadcn/tailwind.css";
 @import "@fontsource-variable/geist";
 
+body {
+  margin: 0;
+  font-family: "Geist", sans-serif;
+}
+
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {

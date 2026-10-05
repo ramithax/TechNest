@@ -27,7 +27,7 @@ function AdminLayout() {
     }
 
     return (
-        <div className="min-h-screen bg-[#09090b] text-white">
+        <div className="min-h-screen bg-zinc-50 text-zinc-900 dark:bg-[#09090b] dark:text-white transition-colors duration-300">
 
             {/* Permanent */}
             <AdminNavbar />

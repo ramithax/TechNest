@@ -1,10 +1,12 @@
 namespace TechNest.Api.DTOs
 {
-	public class CreateRepairDto
-	{
-		public required string CustomerId { get; set; }
-		public required string DeviceModel { get; set; }
-		public required string IssueDescription { get; set; }
+    public class CreateRepairDto
+    {
+        public required string CustomerId { get; set; }
+        public required string DeviceModel { get; set; }
+        public required string IssueDescription { get; set; }
         public string? ImageUrl { get; set; }
+
+        public DateTime AppointmentDate { get; set; }
     }
 }

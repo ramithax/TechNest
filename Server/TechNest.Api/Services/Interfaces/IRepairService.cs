@@ -5,6 +5,7 @@ namespace TechNest.Api.Services.Interfaces
     public interface IRepairService
     {
         Task<List<RepairResponseDto>> GetAllRepairs();
+        Task<List<RepairResponseDto>> GetRepairsByCustomerId(string customerId);
         Task<RepairResponseDto?> GetRepairById(int id);
         Task<RepairResponseDto> CreateRepair(CreateRepairDto repairDto);
         Task<bool> UpdateRepairStatus(int id, UpdateRepairStatusDto updateDto);

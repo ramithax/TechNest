@@ -1,4 +1,4 @@
-﻿namespace TechNest.Api.DTOs
+namespace TechNest.Api.Dtos
 {
     public class UpdateProductDto
     {

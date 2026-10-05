@@ -1,12 +1,17 @@
 ﻿using TechNest.Api.Models;
-using TechNest.Api.DTOs;
+using TechNest.Api.Dtos;
 using TechNest.Api.Dtos.ProductDto;
 
 namespace TechNest.Api.Services.Interfaces
 {
     public interface IProductService
     {
-        Task<List<ProductResponseDto>> GetAllProducts(bool includeInactive = false);
+        Task<PagedProductResponseDto> GetAllProducts(
+            int page,
+            int pageSize,
+            bool includeInactive = false,
+            string? search = null,
+            string? category = null);
 
         Task<ProductResponseDto?> GetProductById(int id);
 

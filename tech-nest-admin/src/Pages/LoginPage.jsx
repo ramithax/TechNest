@@ -1,63 +1,54 @@
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import api from "@/lib/axios";
-import { toast } from "sonner";
 import { jwtDecode } from "jwt-decode";
+import { toast } from "sonner";
+
+import Iridescence from "../components/Iridescence";
+import api from "../lib/axios";
 
 export function LoginPage() {
+    const navigate = useNavigate();
+
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-    const [errors, setErrors] = useState({});
     const [loading, setLoading] = useState(false);
-
-    const navigate = useNavigate();
 
     const handleLogin = async (e) => {
         e.preventDefault();
 
-        const newErrors = {};
-
-        if (!email.trim()) {
-            newErrors.email = "Email is required";
-        } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-            newErrors.email = "Please enter a valid email";
-        }
-
-        if (!password) {
-            newErrors.password = "Password is required";
-        } else if (password.length < 6) {
-            newErrors.password =
-                "Password must be at least 6 characters";
-        }
-
-        if (Object.keys(newErrors).length > 0) {
-            setErrors(newErrors);
+        if (!email || !password) {
+            toast.error("Please enter your email and password.");
             return;
         }
 
-        setErrors({});
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+        if (!emailRegex.test(email)) {
+            toast.error("Please enter a valid email address.");
+            return;
+        }
 
         try {
             setLoading(true);
 
-            const res = await api.post("/Auth/login", {
+            const response = await api.post("/Auth/login", {
                 email,
                 password,
             });
 
-            const accessToken = res.data.accessToken;
+            const data = response.data;
+
+            const accessToken = data.accessToken;
+            const refreshToken = data.refreshToken;
 
             const decoded = jwtDecode(accessToken);
 
             const role =
-                decoded.role ||
                 decoded[
-                "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"
+                    "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"
                 ];
 
-            if (role?.toLowerCase() !== "admin") {
+            if (role !== "Admin") {
                 toast.error(
                     "You are not authorized to access the admin panel."
                 );
@@ -65,281 +56,128 @@ export function LoginPage() {
             }
 
             localStorage.setItem("accessToken", accessToken);
+            localStorage.setItem("refreshToken", refreshToken);
 
-            localStorage.setItem(
-                "refreshToken",
-                res.data.refreshToken
-            );
-
-            toast.success("Login successful");
+            toast.success("Login successful!");
 
             navigate("/admin");
-
         } catch (error) {
             console.error("Login failed:", error);
-            console.log(
-                "Server response:",
-                error.response?.data
-            );
 
-            if (error.response?.status === 401) {
-                toast.error("Invalid email or password");
-            } else if (error.response?.status === 400) {
-                toast.error(
-                    "Please check your email and password"
-                );
-            } else {
-                toast.error(
+            toast.error(
+                error.response?.data?.message ||
+                    error.response?.data ||
                     "Something went wrong. Please try again."
-                );
-            }
-
+            );
         } finally {
             setLoading(false);
         }
     };
 
     return (
-        <div className="relative min-h-screen w-full overflow-hidden bg-[#020617]">
-
-            {/* Background Video */}
-            <video
-                autoPlay
-                loop
-                muted
-                playsInline
-                className="absolute inset-0 h-full w-full object-cover"
-            >
-                <source
-                    src="/login2.mp4"
-                    type="video/mp4"
+        <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-zinc-50 px-4 text-zinc-900">
+            {/* Iridescence background */}
+            <div className="absolute inset-0">
+                <Iridescence
+                    color={[0.25, 0.55, 0.95]}
+                    speed={0.35}
+                    amplitude={0.32}
+                    mouseReact={true}
                 />
-            </video>
+            </div>
 
-            {/* Dark Blue / Purple Overlay */}
-            <div className="absolute inset-0 bg-gradient-to-r from-[#020617]/95 via-[#07102d]/80 via-[#10104a]/45 to-transparent" />
+            {/* Soft blue-tinted overlay */}
+            <div className="absolute inset-0 bg-blue-50/40 backdrop-blur-[2px]" />
 
-            {/* Subtle Purple Glow */}
-            <div className="absolute -left-32 top-1/4 h-[500px] w-[500px] rounded-full bg-purple-700/10 blur-[140px]" />
+            {/* Login card */}
+            <div className="relative z-10 w-full max-w-md">
+                <div className="rounded-2xl border border-zinc-200/80 bg-white/95 p-8 shadow-[0_20px_60px_rgba(0,0,0,0.10)] backdrop-blur-md">
+                    {/* Header */}
+                    <div className="mb-8">
+                        <p className="mb-2 flex items-center justify-center text-xs font-medium uppercase tracking-[0.18em] text-zinc-400">
+                            Admin Portal
+                        </p>
 
-            {/* Subtle Blue Glow */}
-            <div className="absolute left-[35%] top-1/3 h-[400px] w-[400px] rounded-full bg-blue-600/10 blur-[130px]" />
+                        <h1 className="flex items-center justify-center text-3xl font-semibold tracking-tight text-zinc-900">
+                            TechNest
+                        </h1>
 
-            {/* Login Section */}
-            <div className="relative z-10 flex min-h-screen items-center">
+                        <p className="mt-2 flex items-center justify-center text-sm text-zinc-500">
+                            Sign in to access the admin dashboard.
+                        </p>
+                    </div>
 
-                <div className="ml-[8%] w-full max-w-[430px]">
-
-                    {/* Glass Container */}
-                    <div
-                        className="
-                            rounded-2xl
-                            border border-blue-400/20
-                            bg-[#020617]/55
-                            p-8
-                            shadow-[0_0_40px_rgba(37,99,235,0.12)]
-                            backdrop-blur-xl
-                        "
-                    >
-
-                        {/* Header */}
-                        <div className="mb-8 text-center">
-
-                            <h1
-                                className="
-                                    bg-gradient-to-r
-                                    from-white
-                                    via-blue-200
-                                    to-purple-300
-                                    bg-clip-text
-                                    text-5xl
-                                    font-bold
-                                    tracking-tight
-                                    text-transparent
-                                "
+                    <form onSubmit={handleLogin} className="space-y-5">
+                        {/* Email */}
+                        <div>
+                            <label
+                                htmlFor="email"
+                                className="mb-2 block text-sm font-medium text-zinc-700"
                             >
-                                TechNest
-                            </h1>
+                                Email
+                            </label>
 
-                            <h3 className="mt-1 text-3xl font-semibold tracking-tight text-blue-100/90">
-                                Admin
-                            </h3>
-
-                            <p className="mt-3 text-sm text-blue-100/60">
-                                Sign in to continue to your dashboard
-                            </p>
-
+                            <input
+                                id="email"
+                                type="email"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                placeholder="admin@example.com"
+                                autoComplete="email"
+                                className="h-12 w-full rounded-lg border border-zinc-300 bg-white px-4 text-sm text-zinc-900 outline-none transition-all placeholder:text-zinc-400 focus:border-zinc-800 focus:ring-2 focus:ring-zinc-800/10"
+                            />
                         </div>
 
-                        {/* Form */}
-                        <form
-                            onSubmit={handleLogin}
-                            className="space-y-6"
-                        >
-
-                            {/* Email */}
-                            <div className="space-y-2">
-
-                                <label
-                                    htmlFor="email"
-                                    className="text-sm font-medium text-blue-100/80"
-                                >
-                                    Email
-                                </label>
-
-                                <Input
-                                    id="email"
-                                    type="email"
-                                    placeholder="Enter your email"
-                                    value={email}
-                                    onChange={(e) => {
-                                        setEmail(e.target.value);
-
-                                        setErrors((prev) => ({
-                                            ...prev,
-                                            email: "",
-                                        }));
-                                    }}
-                                    disabled={loading}
-                                    className="
-                                        h-12
-                                        rounded-lg
-                                        border-blue-400/20
-                                        bg-blue-950/30
-                                        px-4
-                                        text-blue-50
-                                        placeholder:text-blue-200/35
-                                        backdrop-blur-md
-                                        transition
-                                        hover:border-blue-400/30
-                                        focus:border-cyan-400/50
-                                        focus:bg-blue-900/30
-                                        focus-visible:ring-1
-                                        focus-visible:ring-cyan-400/30
-                                    "
-                                />
-
-                                {errors.email && (
-                                    <p className="text-sm text-red-400">
-                                        {errors.email}
-                                    </p>
-                                )}
-
-                            </div>
-
-                            {/* Password */}
-                            <div className="space-y-2">
-
+                        {/* Password */}
+                        <div>
+                            <div className="mb-2 flex items-center justify-between">
                                 <label
                                     htmlFor="password"
-                                    className="text-sm font-medium text-blue-100/80"
+                                    className="text-sm font-medium text-zinc-700"
                                 >
                                     Password
                                 </label>
 
-                                <Input
-                                    id="password"
-                                    type="password"
-                                    placeholder="Enter your password"
-                                    value={password}
-                                    onChange={(e) => {
-                                        setPassword(e.target.value);
-
-                                        setErrors((prev) => ({
-                                            ...prev,
-                                            password: "",
-                                        }));
-                                    }}
-                                    disabled={loading}
-                                    className="
-                                        h-12
-                                        rounded-lg
-                                        border-blue-400/20
-                                        bg-blue-950/30
-                                        px-4
-                                        text-blue-50
-                                        placeholder:text-blue-200/35
-                                        backdrop-blur-md
-                                        transition
-                                        hover:border-blue-400/30
-                                        focus:border-cyan-400/50
-                                        focus:bg-blue-900/30
-                                        focus-visible:ring-1
-                                        focus-visible:ring-cyan-400/30
-                                    "
-                                />
-
-                                {errors.password && (
-                                    <p className="text-sm text-red-400">
-                                        {errors.password}
-                                    </p>
-                                )}
-
-                            </div>
-
-                            {/* Forgot Password */}
-                            <div className="-mt-2 flex">
-
-                                <button
-                                    type="button"
-                                    className="
-                                        text-sm
-                                        text-blue-300/60
-                                        transition
-                                        hover:text-cyan-300
-                                    "
+                                <a
+                                    href="/forgot-password"
+                                    className="text-xs font-medium text-zinc-500 transition-colors hover:text-zinc-900"
                                 >
                                     Forgot password?
-                                </button>
-
+                                </a>
                             </div>
 
-                            {/* Sign In */}
-                            <Button
-                                type="submit"
-                                disabled={loading}
-                                className="
-                                    h-12
-                                    w-full
-                                    rounded-lg
-                                    border
-                                    border-blue-400/30
-                                    bg-gradient-to-r
-                                    from-blue-600/80
-                                    via-indigo-600/80
-                                    to-purple-600/80
-                                    text-base
-                                    font-semibold
-                                    text-white
-                                    shadow-[0_0_25px_rgba(59,130,246,0.25)]
-                                    backdrop-blur-sm
-                                    transition-all
-                                    duration-300
-                                    hover:border-cyan-300/40
-                                    hover:from-blue-500
-                                    hover:via-indigo-500
-                                    hover:to-purple-500
-                                    hover:shadow-[0_0_30px_rgba(59,130,246,0.4)]
-                                "
-                            >
-                                {loading
-                                    ? "Signing In..."
-                                    : "Sign In"}
-                            </Button>
+                            <input
+                                id="password"
+                                type="password"
+                                value={password}
+                                onChange={(e) =>
+                                    setPassword(e.target.value)
+                                }
+                                placeholder="Enter your password"
+                                autoComplete="current-password"
+                                className="h-12 w-full rounded-lg border border-zinc-300 bg-white px-4 text-sm text-zinc-900 outline-none transition-all placeholder:text-zinc-400 focus:border-zinc-800 focus:ring-2 focus:ring-zinc-800/10"
+                            />
+                        </div>
 
-                        </form>
+                        {/* Sign in */}
+                        <button
+                            type="submit"
+                            disabled={loading}
+                            className="h-12 w-full rounded-lg bg-zinc-900 text-sm font-medium text-white transition-all duration-200 hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-60"
+                        >
+                            {loading ? "Signing in..." : "Sign in"}
+                        </button>
+                    </form>
 
-                        {/* Footer */}
-                        <p className="mt-6 text-center text-xs text-blue-200/40">
-                            © 2026 TechNest. All rights reserved.
+                    {/* Footer */}
+                    <div className="mt-7 border-t border-zinc-100 pt-5">
+                        <p className="text-center text-xs text-zinc-400">
+                            Protected by TechNest Security · ©{" "}
+                            {new Date().getFullYear()}
                         </p>
-
                     </div>
-
                 </div>
-
             </div>
-
         </div>
     );
 }

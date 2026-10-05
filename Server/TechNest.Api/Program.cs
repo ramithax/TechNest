@@ -1,17 +1,41 @@
+using System.Security.Claims;
+using System.Text;
+using System.Text.Json.Serialization;
+
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
-using System.Security.Claims;
-using System.Text;
+
 using TechNest.Api.Data;
 using TechNest.Api.Services;
 using TechNest.Api.Services.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
+var jwtToken = builder.Configuration["AppSettings:Token"];
+
+Console.WriteLine(
+    $"JWT configured: {!string.IsNullOrWhiteSpace(jwtToken)}, Length: {jwtToken?.Length ?? 0}"
+);
+
+Console.WriteLine(
+    $"ENV JWT Length: {Environment.GetEnvironmentVariable("AppSettings__Token")?.Length ?? 0}"
+);
+
+Console.WriteLine(
+    $"CONFIG JWT Length: {builder.Configuration["AppSettings:Token"]?.Length ?? 0}"
+);
+
 // Add services to the container.
-builder.Services.AddControllers();
+builder.Services
+    .AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.Converters.Add(
+            new JsonStringEnumConverter()
+        );
+    });
 
 builder.Services.AddSwaggerGen(options =>
 {
@@ -42,48 +66,78 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 // Services
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
-
-// Added the missing RepairService registration here:
+builder.Services.AddScoped<IEmailService, EmailService>();
+builder.Services.AddScoped<IPcBuildService, PcBuildService>();
+builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<IRepairService, RepairService>();
+
+builder.Services.AddHttpClient<IAgentAIService, AgentAIClient>(
+    client =>
+    {
+        client.BaseAddress = new Uri(
+            builder.Configuration["AgentAI:BaseUrl"]!
+        );
+
+        client.Timeout = TimeSpan.FromMinutes(4);
+    }
+);
+
+builder.Services.AddScoped<IAgentWorkflowService, AgentWorkflowService>();
+
+builder.Services.AddScoped<
+    IPcBuildRequestService,
+    PcBuildRequestService>();
 
 // JWT Authentication
 builder.Services
     .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
-        options.TokenValidationParameters = new TokenValidationParameters
-        {
-            ValidateIssuer = true,
-            ValidIssuer = builder.Configuration["AppSettings:Issuer"],
+        options.TokenValidationParameters =
+            new TokenValidationParameters
+            {
+                ValidateIssuer = true,
+                ValidIssuer =
+                    builder.Configuration[
+                        "AppSettings:Issuer"
+                    ],
 
-            ValidateAudience = true,
-            ValidAudience = builder.Configuration["AppSettings:Audience"],
+                ValidateAudience = true,
+                ValidAudience =
+                    builder.Configuration[
+                        "AppSettings:Audience"
+                    ],
 
-            ValidateLifetime = true,
+                ValidateLifetime = true,
 
-            ValidateIssuerSigningKey = true,
-            IssuerSigningKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(
-                    builder.Configuration["AppSettings:Token"]!
-                )
-            ),
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey =
+                    new SymmetricSecurityKey(
+                        Encoding.UTF8.GetBytes(
+                            builder.Configuration[
+                                "AppSettings:Token"
+                            ]!
+                        )
+                    ),
 
-            // IMPORTANT
-            RoleClaimType = ClaimTypes.Role,
-            NameClaimType = ClaimTypes.Name
-        };
+                RoleClaimType = ClaimTypes.Role,
+                NameClaimType = ClaimTypes.Name
+            };
     });
 
 // CORS
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("ReactApp", policy =>
-    {
-        policy
-            .WithOrigins("http://localhost:5173")
-            .AllowAnyHeader()
-            .AllowAnyMethod();
-    });
+    options.AddPolicy(
+        "DevelopmentCors",
+        policy =>
+        {
+            policy
+                .AllowAnyOrigin()
+                .AllowAnyHeader()
+                .AllowAnyMethod();
+        }
+    );
 });
 
 var app = builder.Build();
@@ -95,11 +149,13 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+// CORS
+app.UseCors("DevelopmentCors");
 
-app.UseCors("ReactApp");
+// Temporarily disabled for Flutter Web local development
+// app.UseHttpsRedirection();
 
-// IMPORTANT: Authentication must come before Authorization
+// Authentication must come before Authorization
 app.UseAuthentication();
 app.UseAuthorization();
 
