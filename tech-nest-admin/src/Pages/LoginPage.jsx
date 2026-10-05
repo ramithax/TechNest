@@ -45,7 +45,7 @@ export function LoginPage() {
 
             const role =
                 decoded[
-                    "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"
+                "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"
                 ];
 
             if (role !== "Admin") {
@@ -66,8 +66,8 @@ export function LoginPage() {
 
             toast.error(
                 error.response?.data?.message ||
-                    error.response?.data ||
-                    "Something went wrong. Please try again."
+                error.response?.data ||
+                "Something went wrong. Please try again."
             );
         } finally {
             setLoading(false);

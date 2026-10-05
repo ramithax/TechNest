@@ -6,7 +6,7 @@ from app.config.settings import settings
 class LLMService:
     def __init__(self):
         self.llm = ChatOpenAI(
-            model="auto",
+            model=settings.model_name,
             api_key=settings.openai_api_key,
             base_url=settings.freellm_base_url,
             temperature=0
