@@ -1,10 +1,11 @@
-class CompatibilityValidator:
+import re
 
+
+class CompatibilityValidator:
     def validate(
         self,
         specifications: list[dict]
     ) -> list[dict]:
-
         issues = []
 
         by_type = {
@@ -19,14 +20,16 @@ class CompatibilityValidator:
         gpu = by_type.get("GPU")
         psu = by_type.get("PSU")
         case = by_type.get("Case")
-        cooler = by_type.get("CPU Cooler")
+        cooler = (
+            by_type.get("CPU Cooler")
+            or by_type.get("Cooler")
+        )
 
         # ============================================================
         # CPU ↔ MOTHERBOARD SOCKET
         # ============================================================
 
         if cpu and motherboard:
-
             cpu_socket = self._normalize(
                 cpu.get("socket")
             )
@@ -36,7 +39,6 @@ class CompatibilityValidator:
             )
 
             if not cpu_socket or not motherboard_socket:
-
                 issues.append({
                     "rule": "CPU_MOTHERBOARD_SOCKET",
                     "severity": "WARNING",
@@ -47,7 +49,6 @@ class CompatibilityValidator:
                 })
 
             elif cpu_socket != motherboard_socket:
-
                 issues.append({
                     "rule": "CPU_MOTHERBOARD_SOCKET",
                     "severity": "ERROR",
@@ -62,7 +63,6 @@ class CompatibilityValidator:
         # ============================================================
 
         if ram and motherboard:
-
             ram_type = self._normalize(
                 ram.get("memory_type")
             )
@@ -72,7 +72,6 @@ class CompatibilityValidator:
             )
 
             if not ram_type or not motherboard_ram_type:
-
                 issues.append({
                     "rule": "RAM_MEMORY_TYPE",
                     "severity": "WARNING",
@@ -83,7 +82,6 @@ class CompatibilityValidator:
                 })
 
             elif ram_type != motherboard_ram_type:
-
                 issues.append({
                     "rule": "RAM_MEMORY_TYPE",
                     "severity": "ERROR",
@@ -105,10 +103,11 @@ class CompatibilityValidator:
                 motherboard.get("max_ram_gb")
             )
 
-            if ram_capacity is not None and max_ram is not None:
-
+            if (
+                ram_capacity is not None
+                and max_ram is not None
+            ):
                 if ram_capacity > max_ram:
-
                     issues.append({
                         "rule": "RAM_CAPACITY",
                         "severity": "ERROR",
@@ -117,8 +116,10 @@ class CompatibilityValidator:
                             f"motherboard maximum of {max_ram}GB."
                     })
 
-            elif ram_capacity is None or max_ram is None:
-
+            elif (
+                ram_capacity is None
+                or max_ram is None
+            ):
                 issues.append({
                     "rule": "RAM_CAPACITY",
                     "severity": "WARNING",
@@ -132,7 +133,6 @@ class CompatibilityValidator:
         # ============================================================
 
         if cpu and cooler:
-
             cpu_socket = self._normalize(
                 cpu.get("socket")
             )
@@ -142,7 +142,6 @@ class CompatibilityValidator:
             )
 
             if not cpu_socket or not supported_sockets:
-
                 issues.append({
                     "rule": "CPU_COOLER_SOCKET",
                     "severity": "WARNING",
@@ -155,7 +154,6 @@ class CompatibilityValidator:
                 cpu_socket,
                 supported_sockets
             ):
-
                 issues.append({
                     "rule": "CPU_COOLER_SOCKET",
                     "severity": "ERROR",
@@ -169,7 +167,6 @@ class CompatibilityValidator:
         # ============================================================
 
         if motherboard and case:
-
             motherboard_form_factor = self._normalize(
                 motherboard.get("form_factor")
             )
@@ -178,8 +175,10 @@ class CompatibilityValidator:
                 case.get("case_form_factor")
             )
 
-            if not motherboard_form_factor or not case_form_factor:
-
+            if (
+                not motherboard_form_factor
+                or not case_form_factor
+            ):
                 issues.append({
                     "rule": "MOTHERBOARD_CASE_FORM_FACTOR",
                     "severity": "WARNING",
@@ -192,7 +191,6 @@ class CompatibilityValidator:
                 motherboard_form_factor,
                 case_form_factor
             ):
-
                 issues.append({
                     "rule": "MOTHERBOARD_CASE_FORM_FACTOR",
                     "severity": "ERROR",
@@ -208,7 +206,6 @@ class CompatibilityValidator:
         # ============================================================
 
         if gpu and case:
-
             gpu_length = self._number(
                 gpu.get("gpu_length_mm")
             )
@@ -221,7 +218,6 @@ class CompatibilityValidator:
                 gpu_length is None
                 or max_gpu_length is None
             ):
-
                 issues.append({
                     "rule": "GPU_CASE_LENGTH",
                     "severity": "WARNING",
@@ -231,7 +227,6 @@ class CompatibilityValidator:
                 })
 
             elif gpu_length > max_gpu_length:
-
                 issues.append({
                     "rule": "GPU_CASE_LENGTH",
                     "severity": "ERROR",
@@ -246,7 +241,6 @@ class CompatibilityValidator:
         # ============================================================
 
         if cooler and case:
-
             cooler_height = self._number(
                 cooler.get("cooler_height_mm")
             )
@@ -259,7 +253,6 @@ class CompatibilityValidator:
                 cooler_height is None
                 or max_cooler_height is None
             ):
-
                 issues.append({
                     "rule": "CPU_COOLER_CASE_HEIGHT",
                     "severity": "WARNING",
@@ -269,7 +262,6 @@ class CompatibilityValidator:
                 })
 
             elif cooler_height > max_cooler_height:
-
                 issues.append({
                     "rule": "CPU_COOLER_CASE_HEIGHT",
                     "severity": "ERROR",
@@ -284,7 +276,6 @@ class CompatibilityValidator:
         # ============================================================
 
         if psu and gpu:
-
             gpu_connectors = self._normalize_list(
                 gpu.get("power_connectors")
             )
@@ -294,7 +285,6 @@ class CompatibilityValidator:
             )
 
             if not gpu_connectors or not psu_connectors:
-
                 issues.append({
                     "rule": "PSU_GPU_CONNECTORS",
                     "severity": "WARNING",
@@ -304,14 +294,11 @@ class CompatibilityValidator:
                 })
 
             else:
-
                 for required_connector in gpu_connectors:
-
                     if not self._connector_supported(
                         required_connector,
                         psu_connectors
                     ):
-
                         issues.append({
                             "rule": "PSU_GPU_CONNECTORS",
                             "severity": "ERROR",
@@ -327,13 +314,11 @@ class CompatibilityValidator:
         # ============================================================
 
         if psu:
-
             psu_wattage = self._number(
                 psu.get("psu_wattage")
             )
 
             if psu_wattage is None:
-
                 issues.append({
                     "rule": "PSU_WATTAGE",
                     "severity": "WARNING",
@@ -342,14 +327,21 @@ class CompatibilityValidator:
                 })
 
             else:
+                cpu_power = (
+                    self._number(
+                        cpu.get("tdp_w")
+                    )
+                    if cpu
+                    else 0
+                )
 
-                cpu_power = self._number(
-                    cpu.get("tdp_w")
-                ) if cpu else 0
-
-                gpu_power = self._number(
-                    gpu.get("power_consumption_w")
-                ) if gpu else 0
+                gpu_power = (
+                    self._number(
+                        gpu.get("power_consumption_w")
+                    )
+                    if gpu
+                    else 0
+                )
 
                 cpu_power = cpu_power or 0
                 gpu_power = gpu_power or 0
@@ -360,13 +352,11 @@ class CompatibilityValidator:
                 )
 
                 if estimated_power > 0:
-
                     recommended_power = (
                         estimated_power * 1.30
                     )
 
                     if psu_wattage < recommended_power:
-
                         issues.append({
                             "rule": "PSU_WATTAGE",
                             "severity": "ERROR",
@@ -378,7 +368,6 @@ class CompatibilityValidator:
                         })
 
                 else:
-
                     issues.append({
                         "rule": "PSU_WATTAGE",
                         "severity": "WARNING",
@@ -395,7 +384,6 @@ class CompatibilityValidator:
 
     @staticmethod
     def _normalize(value):
-
         if value is None:
             return None
 
@@ -410,7 +398,6 @@ class CompatibilityValidator:
 
     @staticmethod
     def _number(value):
-
         if value is None:
             return None
 
@@ -431,13 +418,17 @@ class CompatibilityValidator:
             return None
 
         try:
-            return float(match.group())
+            return float(
+                match.group()
+            )
         except ValueError:
             return None
 
     @classmethod
-    def _normalize_list(cls, value):
-
+    def _normalize_list(
+        cls,
+        value
+    ):
         if value is None:
             return []
 
@@ -462,9 +453,7 @@ class CompatibilityValidator:
         cpu_socket,
         supported_sockets
     ):
-
         for socket in supported_sockets:
-
             if cpu_socket == socket:
                 return True
 
@@ -475,12 +464,11 @@ class CompatibilityValidator:
         motherboard_form_factor,
         case_form_factor
     ):
-
-        # Exact match
+        # Exact match.
         if motherboard_form_factor == case_form_factor:
             return True
 
-        # Case specifications often look like:
+        # Case specifications can contain:
         # "ATX, Micro-ATX, Mini-ITX"
         supported = re.split(
             r"[,/|]+",
@@ -499,24 +487,24 @@ class CompatibilityValidator:
         required,
         available
     ):
-
-        required = required.lower().replace(
-            " ",
-            ""
+        required = (
+            required
+            .lower()
+            .replace(" ", "")
         )
 
         for connector in available:
-
-            connector = connector.lower().replace(
-                " ",
-                ""
+            connector = (
+                connector
+                .lower()
+                .replace(" ", "")
             )
 
-            # Direct match
+            # Direct match.
             if required == connector:
                 return True
 
-            # Handle common variations:
+            # Handle:
             # 8pin
             # 1x8pin
             # 1x8-pin
