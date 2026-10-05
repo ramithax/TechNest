@@ -1,4 +1,5 @@
 from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.output_parsers import PydanticOutputParser
 
 from app.models.specification import ProductSpecifications
 from app.services.llm_service import LLMService
@@ -8,8 +9,8 @@ class SpecificationExtractor:
     def __init__(self):
         self.llm = LLMService().get_llm()
 
-        self.structured_llm = self.llm.with_structured_output(
-            ProductSpecifications
+        self.parser = PydanticOutputParser(
+            pydantic_object=ProductSpecifications
         )
 
         self.prompt = ChatPromptTemplate.from_messages(
@@ -44,6 +45,7 @@ IMPORTANT RULES:
 7. Normalize numerical values.
 
 Examples:
+
 - "120W" -> 120
 - "320mm" -> 320
 - "32GB" -> 32
@@ -67,26 +69,35 @@ Examples:
 
 10. Do not use outside knowledge to fill missing values.
 
-11. Return structured data according to the supplied schema.
+11. Return ONLY the structured JSON object.
+
+12. Do not include explanations before or after the JSON.
+
+The JSON must follow these exact output instructions:
+
+{format_instructions}
 """
                 ),
                 (
                     "human",
                     """
 Product category:
+
 {category}
 
 Product name:
+
 {name}
 
 Product description:
+
 {description}
 """
                 )
             ]
         )
 
-        self.chain = self.prompt | self.structured_llm
+        self.chain = self.prompt | self.llm | self.parser
 
     async def extract(
         self,
@@ -99,6 +110,9 @@ Product description:
             {
                 "category": category,
                 "name": name,
-                "description": description
+                "description": description,
+                "format_instructions": (
+                    self.parser.get_format_instructions()
+                )
             }
         )

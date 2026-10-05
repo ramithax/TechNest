@@ -12,7 +12,6 @@ from app.tools.product_tools import (
 
 
 class ValidatorAgent:
-
     MAX_REVISIONS = 3
 
     def __init__(self):
@@ -21,10 +20,12 @@ class ValidatorAgent:
         self.compatibility_validator = CompatibilityValidator()
         self.build_validator = BuildValidator()
 
-    async def run(self, state: AgentState) -> AgentState:
+    async def run(
+        self,
+        state: AgentState
+    ) -> AgentState:
 
         try:
-
             build = state.get(
                 "build",
                 {}
@@ -36,7 +37,6 @@ class ValidatorAgent:
             )
 
             if not selected_products:
-
                 return {
                     **state,
                     "status": "FAILED_SAFE",
@@ -56,20 +56,18 @@ class ValidatorAgent:
                 f"{len(selected_products)} selected products..."
             )
 
-            # ---------------------------------------------------------
+            # =========================================================
             # STEP 1: VALIDATE PRODUCT IDS
-            # ---------------------------------------------------------
+            # =========================================================
 
             product_ids = []
 
             for selected in selected_products:
-
                 product_id = selected.get(
                     "product_id"
                 )
 
                 if not product_id:
-
                     return {
                         **state,
                         "status": "FAILED_SAFE",
@@ -85,16 +83,13 @@ class ValidatorAgent:
                     }
 
                 try:
-
                     product_id = int(
                         product_id
                     )
-
                 except (
                     TypeError,
                     ValueError
                 ):
-
                     return {
                         **state,
                         "status": "FAILED_SAFE",
@@ -112,6 +107,24 @@ class ValidatorAgent:
                         ]
                     }
 
+                if product_id <= 0:
+                    return {
+                        **state,
+                        "status": "FAILED_SAFE",
+                        "current_agent": "validator",
+                        "current_step": "INVALID_PRODUCT_ID",
+                        "errors": [
+                            *state.get(
+                                "errors",
+                                []
+                            ),
+                            (
+                                f"Product ID '{product_id}' "
+                                "must be greater than zero."
+                            )
+                        ]
+                    }
+
                 product_ids.append(
                     product_id
                 )
@@ -119,7 +132,6 @@ class ValidatorAgent:
             if len(product_ids) != len(
                 set(product_ids)
             ):
-
                 return {
                     **state,
                     "status": "FAILED_SAFE",
@@ -134,9 +146,9 @@ class ValidatorAgent:
                     ]
                 }
 
-            # ---------------------------------------------------------
+            # =========================================================
             # STEP 2: LOOK UP ALL PRODUCTS CONCURRENTLY
-            # ---------------------------------------------------------
+            # =========================================================
 
             print(
                 "[VALIDATOR] Looking up products..."
@@ -160,12 +172,10 @@ class ValidatorAgent:
                 product_ids,
                 lookup_results
             ):
-
                 if isinstance(
                     lookup_result,
                     Exception
                 ):
-
                     return {
                         **state,
                         "status": "FAILED_SAFE",
@@ -185,7 +195,6 @@ class ValidatorAgent:
                     }
 
                 if not lookup_result.success:
-
                     return {
                         **state,
                         "status": "FAILED_SAFE",
@@ -208,7 +217,6 @@ class ValidatorAgent:
                 product = lookup_result.product
 
                 if not product:
-
                     return {
                         **state,
                         "status": "FAILED_SAFE",
@@ -235,12 +243,11 @@ class ValidatorAgent:
                 f"{len(products)} products."
             )
 
-            # ---------------------------------------------------------
-            # STEP 3: CHECK DESCRIPTIONS
-            # ---------------------------------------------------------
+            # =========================================================
+            # STEP 3: CHECK PRODUCT DESCRIPTIONS
+            # =========================================================
 
             for product in products:
-
                 description = product.get(
                     "description"
                 )
@@ -249,7 +256,6 @@ class ValidatorAgent:
                     not description
                     or not str(description).strip()
                 ):
-
                     return {
                         **state,
                         "status": "FAILED_SAFE",
@@ -268,9 +274,9 @@ class ValidatorAgent:
                         ]
                     }
 
-            # ---------------------------------------------------------
+            # =========================================================
             # STEP 4: EXTRACT SPECIFICATIONS CONCURRENTLY
-            # ---------------------------------------------------------
+            # =========================================================
 
             print(
                 "[VALIDATOR] Extracting specifications "
@@ -293,12 +299,10 @@ class ValidatorAgent:
                 products,
                 specification_results
             ):
-
                 if isinstance(
                     result,
                     Exception
                 ):
-
                     return {
                         **state,
                         "status": "FAILED_SAFE",
@@ -327,9 +331,9 @@ class ValidatorAgent:
                 f"for {len(specifications)} products."
             )
 
-            # ---------------------------------------------------------
+            # =========================================================
             # STEP 5: COMPATIBILITY VALIDATION
-            # ---------------------------------------------------------
+            # =========================================================
 
             print(
                 "[VALIDATOR] Checking compatibility..."
@@ -341,9 +345,9 @@ class ValidatorAgent:
                 )
             )
 
-            # ---------------------------------------------------------
+            # =========================================================
             # STEP 6: STOCK VALIDATION
-            # ---------------------------------------------------------
+            # =========================================================
 
             print(
                 "[VALIDATOR] Checking stock..."
@@ -355,48 +359,41 @@ class ValidatorAgent:
                 )
             )
 
-            # ---------------------------------------------------------
+            # =========================================================
             # STEP 7: CALCULATE REAL TOTAL FROM CATALOGUE
-            # ---------------------------------------------------------
+            # =========================================================
 
             summary_products = []
-
             total_amount = 0.0
 
             for selected, product in zip(
                 selected_products,
                 products
             ):
-
                 price_value = product.get(
                     "actualPrice"
                 )
 
                 if price_value is None:
-
                     raise ValueError(
                         f"Product {product.get('id')} "
                         "has no catalogue price."
                     )
 
                 try:
-
                     unit_price = float(
                         price_value
                     )
-
                 except (
                     TypeError,
                     ValueError
                 ):
-
                     raise ValueError(
                         f"Product {product.get('id')} "
                         "has an invalid catalogue price."
                     )
 
                 if unit_price < 0:
-
                     raise ValueError(
                         f"Product {product.get('id')} "
                         "has an invalid negative price."
@@ -445,9 +442,9 @@ class ValidatorAgent:
                 "total_amount": total_amount
             }
 
-            # ---------------------------------------------------------
+            # =========================================================
             # STEP 8: BUDGET VALIDATION
-            # ---------------------------------------------------------
+            # =========================================================
 
             analysis = state.get(
                 "analysis",
@@ -459,22 +456,17 @@ class ValidatorAgent:
             )
 
             if budget is not None:
-
                 try:
-
                     budget = float(
                         budget
                     )
-
                 except (
                     TypeError,
                     ValueError
                 ):
-
                     budget = None
 
             if budget is None:
-
                 budget = self._extract_budget(
                     state.get(
                         "objective",
@@ -493,9 +485,9 @@ class ValidatorAgent:
                 )
             )
 
-            # ---------------------------------------------------------
+            # =========================================================
             # STEP 9: COMBINE VALIDATION ISSUES
-            # ---------------------------------------------------------
+            # =========================================================
 
             issues = (
                 compatibility_issues
@@ -519,9 +511,9 @@ class ValidatorAgent:
                 ) == "WARNING"
             ]
 
-            # ---------------------------------------------------------
+            # =========================================================
             # STEP 10: REVISION / APPROVAL
-            # ---------------------------------------------------------
+            # =========================================================
 
             revision_count = state.get(
                 "revision_count",
@@ -529,13 +521,10 @@ class ValidatorAgent:
             )
 
             if errors:
-
                 revision_count += 1
 
                 if revision_count >= self.MAX_REVISIONS:
-
                     status = "FAILED_SAFE"
-
                     current_step = (
                         "MAX_REVISIONS_REACHED"
                     )
@@ -544,11 +533,8 @@ class ValidatorAgent:
                         "[VALIDATOR] "
                         "Maximum revisions reached."
                     )
-
                 else:
-
                     status = "REVISION_REQUIRED"
-
                     current_step = (
                         "VALIDATION_REQUIRES_REVISION"
                     )
@@ -559,19 +545,14 @@ class ValidatorAgent:
                     )
 
                 approval_required = False
-
                 approval_status = None
 
             else:
-
                 status = "WAITING_FOR_APPROVAL"
-
                 current_step = (
                     "VALIDATION_COMPLETED"
                 )
-
                 approval_required = True
-
                 approval_status = "PENDING"
 
                 print(
@@ -579,9 +560,9 @@ class ValidatorAgent:
                     "Build passed validation."
                 )
 
-            # ---------------------------------------------------------
+            # =========================================================
             # STEP 11: CREATE VALIDATION RESULT
-            # ---------------------------------------------------------
+            # =========================================================
 
             validation = {
                 "is_valid": len(errors) == 0,
@@ -593,9 +574,9 @@ class ValidatorAgent:
                 "budget": budget
             }
 
-            # ---------------------------------------------------------
+            # =========================================================
             # STEP 12: COMPLETED STEPS
-            # ---------------------------------------------------------
+            # =========================================================
 
             completed_steps = [
                 *state.get(
@@ -624,7 +605,6 @@ class ValidatorAgent:
             }
 
         except Exception as ex:
-
             print(
                 f"[VALIDATOR] Failed: {str(ex)}"
             )
@@ -660,7 +640,6 @@ class ValidatorAgent:
             not description
             or not str(description).strip()
         ):
-
             raise ValueError(
                 f"Product '{product.get('name')}' "
                 "does not contain a description."
@@ -702,43 +681,36 @@ class ValidatorAgent:
         )
 
         patterns = [
-
             (
                 r"([0-9]+(?:\.[0-9]+)?)"
                 r"\s*(million|m)\b"
             ),
-
             (
                 r"([0-9]+(?:\.[0-9]+)?)"
                 r"\s*(thousand|k)\b"
             ),
-
             (
                 r"\b(?:rs\.?|lkr|rupees?)"
                 r"\s*"
                 r"([0-9]+(?:\.[0-9]+)?)"
             ),
-
             (
                 r"\bbudget\b"
                 r"[^0-9]{0,40}"
                 r"([0-9]+(?:\.[0-9]+)?)"
             ),
-
             (
                 r"\b(?:around|about|approximately|"
                 r"under|within)\b"
                 r"[^0-9]{0,40}"
                 r"([0-9]+(?:\.[0-9]+)?)"
             ),
-
             (
                 r"\b([0-9]{5,})\b"
             )
         ]
 
         for pattern in patterns:
-
             match = re.search(
                 pattern,
                 text,
@@ -749,23 +721,19 @@ class ValidatorAgent:
                 continue
 
             try:
-
                 value = float(
                     match.group(1)
                 )
-
             except (
                 TypeError,
                 ValueError
             ):
-
                 continue
 
             if (
                 match.lastindex
                 and match.lastindex >= 2
             ):
-
                 unit = (
                     match.group(2)
                     .lower()
@@ -776,14 +744,12 @@ class ValidatorAgent:
                     "million",
                     "m"
                 ):
-
                     value *= 1_000_000
 
                 elif unit in (
                     "thousand",
                     "k"
                 ):
-
                     value *= 1_000
 
             return value

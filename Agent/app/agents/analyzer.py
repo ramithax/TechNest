@@ -1,4 +1,5 @@
 from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.output_parsers import PydanticOutputParser
 
 from app.graph.state import AgentState
 from app.models.analyzer import RequirementsAnalysis
@@ -9,8 +10,8 @@ class AnalyzerAgent:
     def __init__(self):
         self.llm = LLMService().get_llm()
 
-        self.structured_llm = self.llm.with_structured_output(
-            RequirementsAnalysis
+        self.parser = PydanticOutputParser(
+            pydantic_object=RequirementsAnalysis
         )
 
         self.prompt = ChatPromptTemplate.from_messages(
@@ -73,7 +74,13 @@ Examples:
 
 13. Keep all extracted information concise.
 
-Return structured data according to the supplied schema.
+14. Return ONLY the structured JSON object.
+
+15. Do not include explanations before or after the JSON.
+
+The JSON must follow these exact output instructions:
+
+{format_instructions}
 """
                 ),
                 (
@@ -87,14 +94,24 @@ Customer conversation:
             ]
         )
 
-        self.chain = self.prompt | self.structured_llm
+        self.chain = self.prompt | self.llm | self.parser
 
-    async def run(self, state: AgentState) -> AgentState:
-        conversation = state.get("conversation", [])
+    async def run(
+        self,
+        state: AgentState
+    ) -> AgentState:
+
+        conversation = state.get(
+            "conversation",
+            []
+        )
 
         result: RequirementsAnalysis = await self.chain.ainvoke(
             {
-                "conversation": conversation
+                "conversation": conversation,
+                "format_instructions": (
+                    self.parser.get_format_instructions()
+                )
             }
         )
 
