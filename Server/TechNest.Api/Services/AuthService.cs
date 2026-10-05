@@ -355,7 +355,7 @@ namespace TechNest.Api.Services
             await context.SaveChangesAsync();
 
             var resetLink =
-                $"http://localhost:61742/#/reset-password?token={Uri.EscapeDataString(token)}";
+    $"technest://reset-password?token={Uri.EscapeDataString(token)}";
 
             await emailService.SendPasswordResetEmail(
                 user.Email,
@@ -421,7 +421,7 @@ public async Task<TokenResponseDto?> UpdateProfile(
 
             await context.SaveChangesAsync();
 
-            return new TokenResponseDto
+            return new TokenResponseDtoa
             {
                 AccessToken = CreateToken(user),
                 RefreshToken = await GenerateAndSaveRefreshToken(user)
