@@ -4,7 +4,6 @@ from app.config.settings import settings
 
 
 class BackendClient:
-
     def __init__(self):
         self.base_url = settings.backend_url.rstrip("/")
 
@@ -12,17 +11,27 @@ class BackendClient:
         """
         Get products from the TechNest Product API.
         """
+        url = f"{self.base_url}/api/Product"
+
+        print(f"[BACKEND] GET {url}")
 
         async with httpx.AsyncClient(
-            timeout=10.0
+            timeout=30.0
         ) as client:
-
             response = await client.get(
-                f"{self.base_url}/api/Product",
+                url,
                 params={
                     "page": 1,
                     "pageSize": 50
                 }
+            )
+
+            print(
+                f"[BACKEND] Status: {response.status_code}"
+            )
+
+            print(
+                f"[BACKEND] Response: {response.text}"
             )
 
             response.raise_for_status()
@@ -38,18 +47,29 @@ class BackendClient:
         """
         Get one product by ID from the TechNest Product API.
         """
-
         if product_id <= 0:
             raise ValueError(
                 "Product ID must be greater than zero."
             )
 
-        async with httpx.AsyncClient(
-            timeout=10.0
-        ) as client:
+        url = (
+            f"{self.base_url}/api/Product/"
+            f"{product_id}"
+        )
 
-            response = await client.get(
-                f"{self.base_url}/api/Product/{product_id}"
+        print(f"[BACKEND] GET {url}")
+
+        async with httpx.AsyncClient(
+            timeout=30.0
+        ) as client:
+            response = await client.get(url)
+
+            print(
+                f"[BACKEND] Status: {response.status_code}"
+            )
+
+            print(
+                f"[BACKEND] Response: {response.text}"
             )
 
             response.raise_for_status()
