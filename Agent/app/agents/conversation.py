@@ -3,7 +3,6 @@ import json
 from langchain_core.prompts import ChatPromptTemplate
 
 from app.graph.state import AgentState
-from app.models.conversation import ConversationResponse
 from app.services.llm_service import LLMService
 
 
@@ -28,13 +27,13 @@ You are NOT responsible for checking hardware compatibility.
 You only decide whether enough customer requirements are
 available to start the PC building workflow.
 
-IMPORTANT RULES:
+RULES:
 
 1. Be conversational and friendly.
 
 2. Do not ask unnecessary questions.
 
-3. Do not ask for information that the customer already provided.
+3. Do not ask for information the customer already provided.
 
 4. Never invent customer requirements.
 
@@ -42,81 +41,47 @@ IMPORTANT RULES:
 
 6. Do not claim that components are compatible.
 
-7. Ask one useful question at a time when information is missing.
+7. Ask one useful question at a time when important information
+   is missing.
 
-8. A budget is strongly preferred for a build.
+8. The customer's intended use is required.
 
-9. The intended use of the PC is required.
+9. A budget is strongly preferred.
 
-10. Determine performance expectations only from the
-customer's explicit requirements.
+10. Determine performance expectations only from information
+    explicitly provided by the customer.
 
-11. Special requirements should only contain requirements
-explicitly provided by the customer.
+11. Special requirements must only contain requirements
+    explicitly provided by the customer.
 
-12. If the customer has already provided enough information,
-set ready_to_build to true.
+12. If the customer has provided enough information to create
+    a reasonable PC build, set ready_to_build to true.
 
 13. If important information is missing, set ready_to_build
-to false.
+    to false.
 
 14. Do not ask for exact hardware components.
 
 15. Keep the response concise.
 
-16. Return ONLY valid JSON.
+16. Return ONLY a valid JSON object.
 
 17. Do NOT use markdown.
 
-18. Do NOT wrap the JSON in ```json or ```.
+18. Do NOT use ```json or ```.
 
-19. Do NOT write anything before or after the JSON.
+19. Do NOT include explanations outside the JSON.
 
-The JSON format MUST be exactly:
+The JSON MUST contain exactly these fields:
 
-{
-  "response": "your conversational response",
+{{
+  "response": "your response to the customer",
   "ready_to_build": false
-}
+}}
 
-When the customer has provided enough information:
+If enough information is available, ready_to_build must be true.
 
-{
-  "response": "Great. I have enough information to start building your PC.",
-  "ready_to_build": true
-}
-
-Example:
-
-Customer:
-"I need a PC."
-
-Return:
-
-{
-  "response": "Sure! What will you mainly use the PC for, such as gaming, AI development, programming, video editing, or general work?",
-  "ready_to_build": false
-}
-
-Customer:
-"I need a gaming PC around Rs. 500,000."
-
-Return:
-
-{
-  "response": "Great. I have enough information to start building your PC.",
-  "ready_to_build": true
-}
-
-Customer:
-"I need a workstation for AI development around Rs. 500,000."
-
-Return:
-
-{
-  "response": "Great. I have enough information to start building your PC.",
-  "ready_to_build": true
-}
+If important information is missing, ready_to_build must be false.
 """
                 ),
                 (
@@ -241,22 +206,26 @@ Return ONLY the JSON object.
 
         text = raw_content.strip()
 
-        # Remove markdown code fences if the model ignores
-        # the instruction and returns ```json ... ```
+        # Remove markdown code fences if the model
+        # returns ```json ... ```
         if text.startswith("```"):
             lines = text.splitlines()
 
             if lines:
                 lines = lines[1:]
 
-            if lines and lines[-1].strip() == "```":
+            if (
+                lines
+                and lines[-1].strip() == "```"
+            ):
                 lines = lines[:-1]
 
             text = "\n".join(
                 lines
             ).strip()
 
-        # Find JSON object if the model added extra text.
+        # Find the JSON object if the model
+        # adds text around it.
         start = text.find("{")
         end = text.rfind("}")
 
@@ -273,7 +242,7 @@ Return ONLY the JSON object.
             )
         except json.JSONDecodeError as ex:
             raise ValueError(
-                f"Invalid JSON returned by conversation model: "
+                "Invalid JSON returned by conversation model: "
                 f"{text!r}"
             ) from ex
 
