@@ -7,8 +7,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
 
-using Resend;
-
 using TechNest.Api.Data;
 using TechNest.Api.Services;
 using TechNest.Api.Services.Interfaces;
@@ -29,7 +27,6 @@ Console.WriteLine(
     $"CONFIG JWT Length: {builder.Configuration["AppSettings:Token"]?.Length ?? 0}"
 );
 
-// Add services to the container.
 builder.Services
     .AddControllers()
     .AddJsonOptions(options =>
@@ -39,7 +36,6 @@ builder.Services
         );
     });
 
-// Swagger
 builder.Services.AddSwaggerGen(options =>
 {
     options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
@@ -62,7 +58,6 @@ builder.Services.AddSwaggerGen(options =>
         });
 });
 
-// PostgreSQL
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(
         builder.Configuration.GetConnectionString("DefaultConnection")
@@ -77,14 +72,12 @@ builder.Services.AddScoped<IPcBuildService, PcBuildService>();
 builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<IRepairService, RepairService>();
 
-// Resend Email Service
-builder.Services.AddResend(options =>
-{
-    options.ApiToken =
-        builder.Configuration["Resend:ApiKey"]!;
-});
+builder.Services.AddScoped<
+    IPcBuildRequestService,
+    PcBuildRequestService
+>();
 
-// AI Agent
+// Python Agent
 builder.Services.AddHttpClient<IAgentAIService, AgentAIClient>(
     client =>
     {
@@ -98,12 +91,6 @@ builder.Services.AddHttpClient<IAgentAIService, AgentAIClient>(
 
 builder.Services.AddScoped<IAgentWorkflowService, AgentWorkflowService>();
 
-// PC Build Request
-builder.Services.AddScoped<
-    IPcBuildRequestService,
-    PcBuildRequestService
->();
-
 // JWT Authentication
 builder.Services
     .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -113,14 +100,12 @@ builder.Services
             new TokenValidationParameters
             {
                 ValidateIssuer = true,
-
                 ValidIssuer =
                     builder.Configuration[
                         "AppSettings:Issuer"
                     ],
 
                 ValidateAudience = true,
-
                 ValidAudience =
                     builder.Configuration[
                         "AppSettings:Audience"
@@ -129,7 +114,6 @@ builder.Services
                 ValidateLifetime = true,
 
                 ValidateIssuerSigningKey = true,
-
                 IssuerSigningKey =
                     new SymmetricSecurityKey(
                         Encoding.UTF8.GetBytes(
@@ -161,20 +145,17 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
 
-// CORS
 app.UseCors("DevelopmentCors");
 
 // Temporarily disabled for Flutter Web local development
 // app.UseHttpsRedirection();
 
-// Authentication must come before Authorization
 app.UseAuthentication();
 app.UseAuthorization();
 

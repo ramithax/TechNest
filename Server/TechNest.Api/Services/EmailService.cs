@@ -25,233 +25,114 @@ namespace TechNest.Api.Services
                     <body style="
                         margin: 0;
                         padding: 0;
-                        background-color: #eef2f7;
+                        background-color: #f5f5f4;
                         font-family: Arial, Helvetica, sans-serif;
                     ">
 
-                        <table
-                            width="100%"
-                            cellpadding="0"
-                            cellspacing="0"
-                            style="background-color: #eef2f7; padding: 40px 20px;"
-                        >
-                            <tr>
-                                <td align="center">
+                        <div style="
+                            max-width: 600px;
+                            margin: 40px auto;
+                            background-color: #ffffff;
+                            border-radius: 12px;
+                            overflow: hidden;
+                            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+                        ">
 
-                                    <table
-                                        width="600"
-                                        cellpadding="0"
-                                        cellspacing="0"
-                                        style="
-                                            max-width: 600px;
-                                            width: 100%;
-                                            background-color: #ffffff;
-                                            border-radius: 14px;
-                                            overflow: hidden;
-                                            box-shadow: 0 4px 20px rgba(11,31,58,0.10);
-                                        "
-                                    >
+                            <div style="
+                                background-color: #18181b;
+                                padding: 30px;
+                                text-align: center;
+                            ">
+                                <h1 style="
+                                    margin: 0;
+                                    color: #ffffff;
+                                    font-size: 28px;
+                                ">
+                                    TechNest
+                                </h1>
+                            </div>
 
-                                        <!-- Header -->
-                                        <tr>
-                                            <td
-                                                style="
-                                                    background-color: #0b1f3a;
-                                                    padding: 28px 35px;
-                                                    text-align: center;
-                                                "
-                                            >
-                                                <div style="
-                                                    color: #ffffff;
-                                                    font-size: 28px;
-                                                    font-weight: 700;
-                                                    letter-spacing: 0.5px;
-                                                ">
-                                                    TechNest
-                                                </div>
+                            <div style="padding: 40px 30px;">
 
-                                                <div style="
-                                                    color: #dbe7f3;
-                                                    font-size: 13px;
-                                                    margin-top: 6px;
-                                                ">
-                                                    Technology made simple.
-                                                </div>
-                                            </td>
-                                        </tr>
+                                <h2 style="
+                                    margin-top: 0;
+                                    color: #18181b;
+                                ">
+                                    Reset Your Password
+                                </h2>
 
-                                        <!-- Content -->
-                                        <tr>
-                                            <td style="padding: 40px 45px;">
+                                <p style="
+                                    color: #52525b;
+                                    font-size: 15px;
+                                    line-height: 1.6;
+                                ">
+                                    We received a request to reset your
+                                    TechNest account password.
+                                </p>
 
-                                                <h1 style="
-                                                    margin: 0 0 18px 0;
-                                                    color: #172033;
-                                                    font-size: 25px;
-                                                    font-weight: 600;
-                                                ">
-                                                    Reset your password
-                                                </h1>
+                                <p style="
+                                    color: #52525b;
+                                    font-size: 15px;
+                                    line-height: 1.6;
+                                ">
+                                    Click the button below to create a new password.
+                                </p>
 
-                                                <p style="
-                                                    margin: 0 0 18px 0;
-                                                    color: #4b5563;
-                                                    font-size: 15px;
-                                                    line-height: 1.7;
-                                                ">
-                                                    Hello,
-                                                </p>
+                                <div style="
+                                    text-align: center;
+                                    margin: 35px 0;
+                                ">
+                                    <a href="{resetLink}"
+                                       style="
+                                           display: inline-block;
+                                           background-color: #c29a55;
+                                           color: #ffffff;
+                                           text-decoration: none;
+                                           padding: 14px 28px;
+                                           border-radius: 8px;
+                                           font-size: 15px;
+                                           font-weight: bold;
+                                       ">
+                                        Reset Password
+                                    </a>
+                                </div>
 
-                                                <p style="
-                                                    margin: 0 0 25px 0;
-                                                    color: #4b5563;
-                                                    font-size: 15px;
-                                                    line-height: 1.7;
-                                                ">
-                                                    We received a request to reset the password
-                                                    for your TechNest account.
-                                                </p>
+                                <p style="
+                                    color: #71717a;
+                                    font-size: 13px;
+                                    line-height: 1.6;
+                                ">
+                                    This password reset link will expire after
+                                    the configured period.
+                                </p>
 
-                                                <p style="
-                                                    margin: 0 0 28px 0;
-                                                    color: #4b5563;
-                                                    font-size: 15px;
-                                                    line-height: 1.7;
-                                                ">
-                                                    Click the button below to create a new password.
-                                                </p>
+                                <p style="
+                                    color: #71717a;
+                                    font-size: 13px;
+                                    line-height: 1.6;
+                                ">
+                                    If you did not request a password reset,
+                                    you can safely ignore this email.
+                                </p>
 
-                                                <!-- Button -->
-                                                <table
-                                                    cellpadding="0"
-                                                    cellspacing="0"
-                                                    style="margin: 0 auto 30px auto;"
-                                                >
-                                                    <tr>
-                                                        <td
-                                                            align="center"
-                                                            style="
-                                                                border-radius: 8px;
-                                                                background-color: #123a63;
-                                                            "
-                                                        >
-                                                            <a
-                                                                href="{resetLink}"
-                                                                style="
-                                                                    display: inline-block;
-                                                                    padding: 14px 30px;
-                                                                    color: #ffffff;
-                                                                    text-decoration: none;
-                                                                    font-size: 15px;
-                                                                    font-weight: 600;
-                                                                    border-radius: 8px;
-                                                                "
-                                                            >
-                                                                Reset Password
-                                                            </a>
-                                                        </td>
-                                                    </tr>
-                                                </table>
+                            </div>
 
-                                                <!-- Expiry notice -->
-                                                <table
-                                                    width="100%"
-                                                    cellpadding="0"
-                                                    cellspacing="0"
-                                                    style="
-                                                        background-color: #f4f7fa;
-                                                        border-left: 4px solid #123a63;
-                                                        margin-bottom: 28px;
-                                                    "
-                                                >
-                                                    <tr>
-                                                        <td style="padding: 14px 16px;">
-                                                            <p style="
-                                                                margin: 0;
-                                                                color: #4b5563;
-                                                                font-size: 13px;
-                                                                line-height: 1.6;
-                                                            ">
-                                                                This password reset link will expire
-                                                                in <strong>30 minutes</strong>.
-                                                            </p>
-                                                        </td>
-                                                    </tr>
-                                                </table>
+                            <div style="
+                                background-color: #fafafa;
+                                padding: 20px 30px;
+                                text-align: center;
+                                border-top: 1px solid #e4e4e7;
+                            ">
+                                <p style="
+                                    margin: 0;
+                                    color: #a1a1aa;
+                                    font-size: 12px;
+                                ">
+                                    © TechNest. All rights reserved.
+                                </p>
+                            </div>
 
-                                                <p style="
-                                                    margin: 0 0 12px 0;
-                                                    color: #6b7280;
-                                                    font-size: 13px;
-                                                    line-height: 1.6;
-                                                ">
-                                                    If the button above doesn't work, copy and paste
-                                                    the following link into your browser:
-                                                </p>
-
-                                                <p style="
-                                                    margin: 0 0 28px 0;
-                                                    word-break: break-all;
-                                                    font-size: 12px;
-                                                    line-height: 1.6;
-                                                ">
-                                                    <a
-                                                        href="{resetLink}"
-                                                        style="
-                                                            color: #245a8d;
-                                                            text-decoration: none;
-                                                        "
-                                                    >
-                                                        {resetLink}
-                                                    </a>
-                                                </p>
-
-                                                <p style="
-                                                    margin: 0 0 8px 0;
-                                                    color: #6b7280;
-                                                    font-size: 13px;
-                                                    line-height: 1.6;
-                                                ">
-                                                    If you didn't request a password reset,
-                                                    you can safely ignore this email.
-                                                </p>
-
-                                                <p style="
-                                                    margin: 25px 0 0 0;
-                                                    color: #4b5563;
-                                                    font-size: 14px;
-                                                    line-height: 1.6;
-                                                ">
-                                                    Regards,<br>
-                                                    <strong>TechNest Team</strong>
-                                                </p>
-
-                                            </td>
-                                        </tr>
-
-                                        <!-- Footer -->
-                                        <tr>
-                                            <td style="
-                                                background-color: #f4f7fa;
-                                                padding: 22px 35px;
-                                                text-align: center;
-                                                border-top: 1px solid #dbe2ea;
-                                            ">
-                                                <p style="
-                                                    margin: 0;
-                                                    color: #8a94a3;
-                                                    font-size: 12px;
-                                                ">
-                                                    © TechNest. All rights reserved.
-                                                </p>
-                                            </td>
-                                        </tr>
-
-                                    </table>
-
-                                </td>
-                            </tr>
-                        </table>
+                        </div>
 
                     </body>
                     </html>
